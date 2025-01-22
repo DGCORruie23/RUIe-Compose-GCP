@@ -1,0 +1,6 @@
+Django==4.2.6
+djangorestframework==3.14.0
+openpyxl==3.0.10
+sqlparse==0.4.4
+gunicorn
+psycopg2

@@ -1,0 +1,560 @@
+{% extends "base/base.html" %}
+
+{% block title %}
+    Editar Registro
+{% endblock title %}
+
+{% block navigation %}
+    Edición de registros
+{% endblock navigation %}
+
+{% block styles %}
+
+<style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background-color: #13322B;
+            color: #000000;
+        }
+
+        .container {
+            max-width: 500px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #D4C19C;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .container h2 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: bold;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #4E232E;
+            border-radius: 5px;
+            box-sizing: border-box;
+            background-color: #285C4D;
+            color: #fff;
+            margin-top: 5px;
+        }
+
+        .btn-submit {
+            background-color: #C30E2E;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .btn-submit:hover {
+            background-color: #9F2241;
+        }
+</style>
+
+{% endblock styles %}
+
+{% block content %}
+{% if user.is_authenticated %}
+    <div class="grow">
+        <div class="container">
+            <form method="post" action="#"  enctype="multipart/form-data">{% csrf_token %}
+
+                <p>
+                    <div class="form-group">
+                    <label for="id_oficinaRepre">Oficina:</label>
+                    <!-- <input type="text" name="idoficinaRepre" value="{{datosR.oficinaR}}" required="" id="id_oficinaRepre"> -->
+                    <select type="text" name="oficinaR" value="{{ datosR.oficinaR }}" class="elegant-input" id="id_oficinaRepre" {% if not request.user.is_superuser %} hidden {% endif %}>
+                        <option value="AGUASCALIENTES" {% if datosR.oficinaR == 'AGUASCALIENTES' %}selected{% endif %}>AGUASCALIENTES</option>
+                        <option value="BAJA CALIFORNIA" {% if datosR.oficinaR == 'BAJA CALIFORNIA' %}selected{% endif %}>BAJA CALIFORNIA</option>
+                        <option value="BAJA CALIFORNIA SUR" {% if datosR.oficinaR == 'BAJA CALIFORNIA SUR' %}selected{% endif %}>BAJA CALIFORNIA SUR</option>
+                        <option value="CAMPECHE" {% if datosR.oficinaR == 'CAMPECHE' %}selected{% endif %}>CAMPECHE</option>
+                        <option value="CDMX" {% if datosR.oficinaR == 'CDMX' %}selected{% endif %}>CDMX</option>
+                        <option value="CHIAPAS" {% if datosR.oficinaR == 'CHIAPAS' %}selected{% endif %}>CHIAPAS</option>
+                        <option value="CHIHUAHA" {% if datosR.oficinaR == 'CHIHUAHA' %}selected{% endif %}>CHIHUAHA</option>
+                        <option value="COAHUILA" {% if datosR.oficinaR == 'COAHUILA' %}selected{% endif %}>COAHUILA</option>
+                        <option value="COLIMA" {% if datosR.oficinaR == 'COLIMA' %}selected{% endif %}>COLIMA</option>
+                        <option value="DURANGO" {% if datosR.oficinaR == 'DURANGO' %}selected{% endif %}>DURANGO</option>
+                        <option value="EDOMEX" {% if datosR.oficinaR == 'EDOMEX' %}selected{% endif %}>EDOMEX</option>
+                        <option value="GUERRERO" {% if datosR.oficinaR == 'GUERRERO' %}selected{% endif %}>GUERRERO</option>
+                        <option value="GUANAJUATO" {% if datosR.oficinaR == 'GUANAJUATO' %}selected{% endif %}>GUANAJUATO</option>
+                        <option value="HIDALGO" {% if datosR.oficinaR == 'HIDALGO' %}selected{% endif %}>HIDALGO</option>
+                        <option value="JALISCO" {% if datosR.oficinaR == 'JALISCO' %}selected{% endif %}>JALISCO</option>
+                        <option value="MICHOACÁN" {% if datosR.oficinaR == 'MICHOACÁN' %}selected{% endif %}>MICHOACÁN</option>
+                        <option value="MORELOS" {% if datosR.oficinaR == 'MORELOS' %}selected{% endif %}>MORELOS</option>
+                        <option value="NAYARIT" {% if datosR.oficinaR == 'NAYARIT' %}selected{% endif %}>NAYARIT</option>
+                        <option value="NUEVO LEÓN" {% if datosR.oficinaR == 'NUEVO LEÓN' %}selected{% endif %}>NUEVO LEÓN</option>
+                        <option value="OAXACA" {% if datosR.oficinaR == 'OAXACA' %}selected{% endif %}>OAXACA</option>
+                        <option value="PUEBLA" {% if datosR.oficinaR == 'PUEBLA' %}selected{% endif %}>PUEBLA</option>
+                        <option value="QUERÉTARO" {% if datosR.oficinaR == 'QUERÉTARO' %}selected{% endif %}>QUERÉTARO</option>
+                        <option value="QUINTANA ROO" {% if datosR.oficinaR == 'QUINTANA ROO' %}selected{% endif %}>QUINTANA ROO</option>
+                        <option value="SAN LUIS POTOSÍ" {% if datosR.oficinaR == 'SAN LUIS POTOSÍ' %}selected{% endif %}>SAN LUIS POTOSÍ</option>
+                        <option value="SINALOA" {% if datosR.oficinaR == 'SINALOA' %}selected{% endif %}>SINALOA</option>
+                        <option value="SONORA" {% if datosR.oficinaR == 'SONORA' %}selected{% endif %}>SONORA</option>
+                        <option value="TABASCO" {% if datosR.oficinaR == 'TABASCO' %}selected{% endif %}>TABASCO</option>
+                        <option value="TAMAULIPAS" {% if datosR.oficinaR == 'TAMAULIPAS' %}selected{% endif %}>TAMAULIPAS</option>
+                        <option value="TLAXCALA" {% if datosR.oficinaR == 'TLAXCALA' %}selected{% endif %}>TLAXCALA</option>
+                        <option value="VERACRUZ" {% if datosR.oficinaR == 'VERACRUZ' %}selected{% endif %}>VERACRUZ</option>
+                        <option value="YUCATÁN" {% if datosR.oficinaR == 'YUCATÁN' %}selected{% endif %}>YUCATÁN</option>
+                        <option value="ZACATECAS" {% if datosR.oficinaR == 'ZACATECAS' %}selected{% endif %}>ZACATECAS</option>
+
+                    </select><br>
+                </div>
+                </p>
+                
+                <p>
+                    <div class="form-group">
+                    <input type="hidden" name="idRescate" value="{{datosR.idRescate}}" required="" id="id_idRescate">
+                    </div>
+                </p>
+        
+                <p>
+                    <div class="form-group">
+                    <input type="hidden" name="fecha" value="{{datosR.fecha}}" required="" id="id_fecha">
+                </div>
+                </p>
+                
+                <p>
+                    <label for="id_hora">Hora:</label>
+                    <input type="time" name="hora" value="{{datosR.hora}}" placeholder="hrs:mins" required="" id="id_hora">
+                </p>
+                
+                <p>
+                    <label for="id_tipo_punto">Tipo de punto de Rescate:</label>
+                    <select name="tipo_punto" id="id_tipo_punto">
+                        {% for val in tiposPNombre %}
+                            <option value="{{val}}">{{val}}</option>
+                        {% endfor %}
+                    </select>
+                    
+                </p>
+                
+                <p>
+                    <label for="id_puntoEstra">Nombre punto de Rescate:</label>
+                    <select name="puntoEstra" id="id_puntoEstra">
+                    </select>
+                </p>
+                
+                <p>
+                    <label for="id_nacionalidad">Nacionalidad:</label>
+                    <select name="nacionalidad" id="id_nacionalidad">
+                    </select>
+                </p>
+                
+                
+                <p>
+                    <label for="id_nombre">Nombre:</label>
+                    <input type="text" name="nombre" value="{{datosR.nombre}}" maxlength="100" required="" id="id_nombre">
+                </p>
+                
+                
+                <p>
+                    <label for="id_apellidos">Apellidos:</label>
+                    <input type="text" name="apellidos" value="{{datosR.apellidos}}" maxlength="150" required="" id="id_apellidos">
+                </p>
+                
+                
+                <p>
+                    <label for="id_parentesco">Parentesco:</label>
+                    <input type="text" name="parentesco" value="{{datosR.parentesco}}" maxlength="50" id="id_parentesco">
+                </p>
+                
+                
+                <p>
+                    <label for="id_fechaNacimiento">Fecha de Nacimiento:</label>
+                    <input type="date" name="fechaNacimiento" value="{{datosR.fechaNacimiento}}" required="" id="id_fechaNacimiento" min="1920-01-01">
+                </p>
+                
+                
+                <p>
+                    <label for="id_sexo">Sexo: :</label>
+                    <select name="sexo" id="id_sexo">
+                        <option value="True">Hombre</option>
+                        
+                        <option value="False">Mujer</option>
+                    </select>
+                </p>
+                
+                
+                <p>
+                    <label for="id_embarazo">Embarazo: :</label>
+                    <select name="embarazo" id="id_embarazo">
+                        <option value="True">Si</option>
+                        
+                        <option value="False">No</option>
+                    </select>
+                </p>
+                
+                
+                <p>
+                    <label for="id_numFamilia">Numero de Familia:</label>
+                    <input type="number" name="numFamilia" value="{{datosR.numFamilia}}" required="" id="id_numFamilia">
+                </p>
+                <div class="form-group">
+                <p class="py-4">
+                    <input class="py-2 px-2 bg-teal-600 rounded-xl text-white" id="fo" type="submit" value="Actualizar datos">
+                </p>
+            </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+
+        var aero = {{ res_aero|safe }};
+        var carre = {{ res_carre|safe }};
+        var central = {{ res_central|safe }};
+        var ferro = {{ res_ferro|safe }};
+        var mun = {{ municipio|safe }};
+        var nacionalidades = {{ nacion|safe }};
+        var opc_vacias = ["Sin Información"];
+
+        var fuerza = {{ puntosEstrategicos|safe }};
+        console.log(aero);
+
+        
+        var miSelect = document.getElementById("id_tipo_punto");
+        miSelect.value = "{{datosR.tipo_punto}}";
+
+        actualizarNacio()
+        var miNac = document.getElementById("id_nacionalidad");
+        miNac.value = "{{datosR.nacionalidad}}";
+
+        var sexo = document.getElementById("id_sexo");
+        sexo.value = "{{datosR.sexo}}";
+
+        var embaraz = document.getElementById("id_embarazo");
+        embaraz.value = "{{datosR.embarazo}}";
+        
+        actualizarTipos()
+        asignarPuntoEstrategico()
+        
+
+
+
+        function asignarPuntoEstrategico() {
+            tipo_punto = document.getElementById("id_tipo_punto").value;
+
+            //aeropuerto
+            if(tipo_punto === "{{ tiposPNombre.0|escapejs }}") {
+                nom_puntos = document.getElementById("id_puntoEstra");
+
+                nom_puntos.value = "{{ datosR.puntoEstra|escapejs }}";
+            //carretero
+            } else if (tipo_punto === "{{tiposPNombre.1}}"){
+
+                nom_puntos = document.getElementById("id_puntoEstra");
+                nom_puntos.value = "{{datosR.puntoEstra|escapejs }}";
+            //central de autobus
+            } else if (tipo_punto === "{{tiposPNombre.2}}"){
+
+                nom_puntos = document.getElementById("id_puntoEstra");
+                nom_puntos.value = "{{datosR.puntoEstra|escapejs }}";
+            //casa de seguridad y hotel
+            } else if (tipo_punto === "{{tiposPNombre.3}}" || tipo_punto === "{{tiposPNombre.5}}"){
+
+                nom_puntos = document.getElementById("id_puntoEstra");
+                nom_puntos.value = "{{datosR.puntoEstra|escapejs }}";
+            //ferrocarril
+            } else if (tipo_punto === "{{tiposPNombre.4}}"){
+
+                nom_puntos = document.getElementById("id_puntoEstra");
+                nom_puntos.value = "{{datosR.puntoEstra|escapejs }}";
+            //puestos a disposición y voluntarios
+            } else if (tipo_punto === "{{tiposPNombre.6}}" || tipo_punto === "{{tiposPNombre.7}}"){
+
+                nom_puntos = document.getElementById("id_puntoEstra");
+                nom_puntos.value = "Sin Información";
+            }
+        }
+
+        function actualizarTipos() {
+            tipo_punto = document.getElementById("id_tipo_punto").value;
+            nombres_puntos = document.getElementById("id_puntoEstra");
+            nombres_puntos.innerHTML = ""
+
+            if(tipo_punto === "{{tiposPNombre.0}}"){
+                for (var i = 0; i < aero.length; i++) {
+                    agregarOpcion(nombres_puntos, aero[i], aero[i])
+                }
+            } else if (tipo_punto === "{{tiposPNombre.1}}"){
+                for (var i = 0; i < carre.length; i++) {
+                    agregarOpcion(nombres_puntos, carre[i], carre[i])
+                } 
+            } else if (tipo_punto === "{{tiposPNombre.2}}"){
+                for (var i = 0; i < central.length; i++) {
+                    agregarOpcion(nombres_puntos, central[i], central[i])
+                } 
+            } else if (tipo_punto === "{{tiposPNombre.3}}" || tipo_punto === "{{tiposPNombre.5}}"){
+                for (var i = 0; i < mun.length; i++) {
+                    agregarOpcion(nombres_puntos, mun[i], mun[i])
+                } 
+            } else if (tipo_punto === "{{tiposPNombre.4}}"){
+                for (var i = 0; i < ferro.length; i++) {
+                    agregarOpcion(nombres_puntos, ferro[i], ferro[i])
+                } 
+            } else if (tipo_punto === "{{tiposPNombre.6}}" || tipo_punto === "{{tiposPNombre.7}}"){
+                for (var i = 0; i < opc_vacias.length; i++) {
+                    agregarOpcion(nombres_puntos, opc_vacias[i], opc_vacias[i])
+                } 
+            }
+        }
+
+        function actualizarNacio(){
+            selec_nac = document.getElementById("id_nacionalidad");
+            selec_nac.innerHTML = ""
+
+            for (var i = 0; i < nacionalidades.length; i++) {
+                agregarOpcion(selec_nac, nacionalidades[i], nacionalidades[i])
+            }
+
+        }
+
+        function agregarOpcion(select, valor, texto) {
+            var opcion = document.createElement("option");
+            opcion.value = valor;
+            opcion.text = texto;
+            select.add(opcion);
+          }
+
+        //   document.getElementById('id_oficinaRepre').addEventListener('change', function() {
+        //     var selectedValue = this.value;
+        //     console.log(selectedValue);
+            
+        //   });
+ 
+    // Define los datos de los puntos estratégicos y de internación
+    var datosPuntosEstrategicos = {{ puntosEstrategicos|safe }};
+    var datosPuntosInternacion = {{ puntosInternacion|safe }};
+    var datosMunicipios = {{ municipios|safe }};
+
+
+    // Función para actualizar el nombre del punto
+    function actualizarNombrePunto() {
+        var oficina = document.getElementById("id_oficinaRepre").value;
+        var tipoPunto = document.getElementById("id_tipo_punto").value;
+        var nombrePuntoSelect = document.getElementById("id_puntoEstra");
+
+         //aeropuerto
+         if(tipoPunto === "{{tiposPNombre.0}}"){
+            if(datosPuntosEstrategicos[oficina]['Aeropuerto'] || datosPuntosInternacion[oficina]['AEREOS']){
+                let datosAeropuerto = datosPuntosEstrategicos[oficina]['Aeropuerto'];
+            let datosAereos = datosPuntosInternacion[oficina]['AEREOS'];
+
+            let datosCombinados = "";
+
+            if (datosAeropuerto && datosAereos) {
+                datosCombinados = [...datosAeropuerto, ...datosAereos];
+            } else if (datosAeropuerto) {
+                datosCombinados = datosAeropuerto;
+            } else if (datosAereos) {
+                datosCombinados = datosAereos;
+            }
+
+            let datosCombinadosString = datosCombinados.join('|||');
+
+            console.log("oficina");
+            console.log(oficina);
+            console.log("datosAeropuerto");
+            console.log(datosAeropuerto);
+            console.log("datosAereos");
+            console.log(datosAereos);
+            console.log("datosCombinados");
+            console.log(datosCombinadosString);
+
+            let nomPuntos = document.getElementById("id_puntoEstra");
+            nomPuntos.innerHTML = '';
+
+            let opciones = datosCombinadosString.split('|||');
+            opciones.forEach(opcion => {
+                let option = document.createElement('option');
+                option.text = opcion;
+                nomPuntos.add(option);
+            });
+            }else{
+                let nomPuntos = document.getElementById("id_puntoEstra");
+                nomPuntos.innerHTML = '';
+            }
+
+
+
+        //carretero
+        } else if (tipoPunto === "{{tiposPNombre.1}}"){
+            if(datosPuntosEstrategicos[oficina]['Carretero'] || datosPuntosInternacion[oficina]['TERRESTRES']){
+                let datosCarretero = datosPuntosEstrategicos[oficina]['Carretero'];
+                let datosTERRESTRES = datosPuntosInternacion[oficina]['TERRESTRES'];
+
+                let datosCombinados = "";
+
+                if (datosCarretero && datosTERRESTRES) {
+                    datosCombinados = [...datosCarretero, ...datosTERRESTRES];
+                } else if (datosCarretero) {
+                    datosCombinados = datosCarretero;
+                } else if (datosTERRESTRES) {
+                    datosCombinados = datosTERRESTRES;
+                }
+
+                let datosCombinadosString = datosCombinados.join('|||');
+
+                console.log("oficina");
+                console.log(oficina);
+                console.log("datosCarretero");
+                console.log(datosCarretero);
+                console.log("datosTERRESTRES");
+                console.log(datosTERRESTRES);
+                console.log("datosCombinados");
+                console.log(datosCombinadosString);
+
+                let nomPuntos = document.getElementById("id_puntoEstra");
+                nomPuntos.innerHTML = '';
+
+                let opciones = datosCombinadosString.split('|||');
+                opciones.forEach(opcion => {
+                    let option = document.createElement('option');
+                    option.text = opcion;
+                    nomPuntos.add(option);
+                });
+            }else{
+                let nomPuntos = document.getElementById("id_puntoEstra");
+                nomPuntos.innerHTML = '';
+            }
+            
+
+
+
+
+        //central de autobus
+        } else if (tipoPunto === "{{tiposPNombre.2}}"){
+
+            if(datosPuntosEstrategicos[oficina]['Central de autobús']){
+                let datosCentral = datosPuntosEstrategicos[oficina]['Central de autobús'];
+                datosCentral = datosCentral.join('|||');
+
+                console.log("oficina");
+                console.log(oficina);
+                console.log("datosCentral");
+                console.log(datosCentral);
+
+                let nomPuntos = document.getElementById("id_puntoEstra");
+                nomPuntos.innerHTML = '';
+
+                let opciones = datosCentral.split('|||');
+                opciones.forEach(opcion => {
+                    let option = document.createElement('option');
+                    option.text = opcion;
+                    nomPuntos.add(option);
+                });
+            }else{
+                let nomPuntos = document.getElementById("id_puntoEstra");
+                nomPuntos.innerHTML = '';
+            }
+            
+
+        //casa de seguridad y hotel
+        } else if (tipoPunto === "{{tiposPNombre.3}}" || tipoPunto === "{{tiposPNombre.5}}"){
+            if(datosMunicipios[oficina]){
+                let datosMun = datosMunicipios[oficina];
+                datosMun = datosMun.join('|||');
+
+                console.log("oficina");
+                console.log(oficina);
+                console.log("datosMunicipios");
+                console.log(datosMun);
+
+                let nomPuntos = document.getElementById("id_puntoEstra");
+                nomPuntos.innerHTML = '';
+
+                let opciones = datosMun.split('|||');
+                opciones.forEach(opcion => {
+                    let option = document.createElement('option');
+                    option.text = opcion;
+                    nomPuntos.add(option);
+            });
+            }else{
+                let nomPuntos = document.getElementById("id_puntoEstra");
+                nomPuntos.innerHTML = '';
+            }
+            
+
+        //ferrocarril
+        } else if (tipoPunto === "{{tiposPNombre.4}}"){
+
+            if(datosPuntosEstrategicos[oficina]['Ferroviario']){
+                let datosferrocarril = datosPuntosEstrategicos[oficina]['Ferroviario'];
+                datosferrocarril = datosferrocarril.join('|||');
+
+                console.log("oficina");
+                console.log(oficina);
+                console.log("datosferrocarril");
+                console.log(datosferrocarril);
+
+                let nomPuntos = document.getElementById("id_puntoEstra");
+                nomPuntos.innerHTML = '';
+
+                let opciones = datosferrocarril.split('|||');
+                opciones.forEach(opcion => {
+                    let option = document.createElement('option');
+                    option.text = opcion;
+                    nomPuntos.add(option);
+                });
+            }else{
+                let nomPuntos = document.getElementById("id_puntoEstra");
+                nomPuntos.innerHTML = '';
+            }
+
+        //puestos a disposición y voluntarios
+        } else if (tipoPunto === "{{tiposPNombre.6}}" || tipoPunto === "{{tiposPNombre.7}}"){
+            let nomPuntos = document.getElementById("id_puntoEstra");
+            nomPuntos.innerHTML = "Sin Información";
+        }
+
+    //     // Agregar opciones al select
+    //     if (datos) {
+    //         for (var i = 0; i < datos.length; i++) {
+    //             var option = document.createElement("option");
+    //             option.text = datos[i];
+    //             option.value = datos[i];
+    //             nombrePuntoSelect.appendChild(option);
+    //         }
+    //     }
+     }
+
+    // Llamar a la función cuando se cambie la oficina o el tipo de punto
+    document.getElementById("id_oficinaRepre").addEventListener("change", actualizarNombrePunto);
+    document.getElementById("id_tipo_punto").addEventListener("change", actualizarNombrePunto);
+
+    // Llamar a la función para configurar las opciones iniciales
+    // actualizarNombrePunto();
+
+
+    </script> 
+    
+    {% comment %} <div class="grow">
+        <form method="post" action="{% url 'mostrar' %}"  enctype="multipart/form-data">{% csrf_token %}
+            {{form.as_p}}
+            <p class="py-4">
+                <input class="py-2 px-2 bg-teal-600 rounded-xl text-white" type="submit" value="Actualizar datos"/>
+            </p>
+        </form>
+    </div> {% endcomment %}
+
+    {% comment %} <h1 class="text-xl">Dashboard de {{usuario.0.oficinaR}} </h1> {% endcomment %}
+    {% endif %}
+{% endblock content %}

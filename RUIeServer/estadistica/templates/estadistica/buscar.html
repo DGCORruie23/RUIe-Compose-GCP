@@ -1,0 +1,158 @@
+{% extends "base/base.html" %}
+
+{% load static %}
+
+{% block title %}Estadistica{% endblock title %}
+
+{% block styles %}
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.17.0/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.17.0/dist/xlsx.full.min.js"></script>
+
+{% endblock styles %}
+
+{% block estadistica %}
+    {% if request.user.is_superuser %}
+        <a href="{% url 'estadistica' %}" class="bg-inm-verde-100 text-white px-6 py-3 rounded-xl hover:bg-inm-marron-200">Estadistica</a>
+    {% endif %}
+{% endblock estadistica %}
+
+{% block content %}
+
+    
+<!-- <body class="flex flex-col mx-auto my-auto min-h-screen"></body> -->
+<div class="flex-grow flex flex-col justify-center items-center p-4">
+
+    <!-- Fila Superior -->
+    <div class="bg-white p-4 rounded-lg shadow mb-8">
+        <h2 class="text-xl font-semibold">Seleccione fecha de busqueda:</h2>
+        <form id="form-fecha">
+            {% csrf_token %}
+            <input type="date" name="fecha" id="id_fecha">
+            <button type="submit">Buscar</button>
+        </form>
+    </div>
+
+    <!-- Contenedor de carga -->
+    <div id="loading" hidden class="bg-white p-4 rounded-lg shadow mb-8">Cargando resultados...</div>
+
+
+    <!-- Contenedor de dos columnas -->
+    <div id="seccion" class="grid grid-cols-2 gap-8 w-full max-w-2xl hidden">
+        
+        <!-- Columna Izquierda -->
+        <div class="flex flex-col justify-center items-center bg-white p-4 rounded-lg shadow">
+            <h2 class="text-xl font-semibold text-center">Total de Reincidentes<br><h2 id="fechaR" class="text-xl font-semibold text-center"></h2><br></h2>
+            <h3 id="resultados" class="text-xl text-gray-600"></h3>
+        </div>
+        
+        <!-- Columna Derecha -->
+        <div class="flex justify-center items-center bg-white p-4 rounded-lg shadow">
+            <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" onclick="generarExcel()">
+                Descargar <br> Listado
+            </button>
+        </div>
+
+    </div>
+
+</div>
+
+
+<script>
+    let infoExcel = null;
+    let fechaArchivo = "2024-01-01";
+
+    $(document).ready(function() {
+        $('#form-fecha').on('submit', function(e) {
+            e.preventDefault();
+
+            $('#loading').show();
+
+            let fecha = $('#id_fecha').val();
+        
+            $.ajax({
+                url: '{% url "reincidencia" %}',
+                type: 'GET',
+                data: {
+                    'fecha': fecha,
+                },
+                success: function(response) {
+                    $('#loading').hide();
+                    $('#seccion').show();
+
+                    let resultados = $('#resultados');
+                    let fechaC = $('#fechaR');
+                    resultados.empty(); // Limpiar resultados previos
+                    fechaC.empty();
+
+                    //console.log(response.data[0].resultados);
+                    console.log(response.data[0].resultados);
+
+                    if (response.data.length > 0) {
+                        infoExcel = response.data[0].resultados;
+                        resultados.append(response.data[0].conteo);
+                        fechaC.append(response.data[0].fecha);
+                        fechaArchivo = response.data[0].fecha;
+                        // Diccionario pasado desde Django
+                    } else {
+                        resultados.append('<h1>No se encontraron resultados</h1>');
+                    }
+                },
+                error: function() {
+                    $('#loading').hide();
+                    $('#seccion').hide();
+                    alert('Error al buscar los rescates');
+                }
+            });
+        });
+    });
+
+
+    [
+    {nombre: 'David', apellidos: 'Mitaj', iso3: 'ALB', puntoEstra: 'Hermosillo, A. I.', veces: 3},
+    {nombre: 'Aleksander', apellidos: 'Bunjaj', iso3: 'ALB', puntoEstra: 'Hermosillo, A. I.', veces: 4}
+    ]
+
+    function generarExcel() {
+        const diccionario = infoExcel;
+
+        const workbook = XLSX.utils.book_new();
+        const worksheet = XLSX.utils.json_to_sheet(diccionario);
+
+        // Añadir la hoja al libro
+        XLSX.utils.book_append_sheet(workbook, worksheet, "Datos");
+
+        // Descargar el archivo Excel
+        XLSX.writeFile(workbook, "Reincidentes_" + fechaArchivo + ".xlsx");
+
+        
+
+        // // Crear un array de objetos para representar los datos en el archivo Excel
+        // const datosExcel = [];
+
+        // // Obtener las claves del diccionario como encabezados de columnas
+        // const encabezados = Object.keys(diccionario[0]);
+        // datosExcel.push(encabezados);
+
+        // // Recorrer el diccionario y organizar los datos en filas
+        // const numFilas = diccionario[encabezados[0]].length;
+        // for (let i = 0; i < numFilas; i++) {
+        //     const fila = encabezados.map(encabezado => diccionario[encabezado][i]);
+        //     datosExcel.push(fila);
+        // }
+
+        // // Crear el libro y la hoja de cálculo
+        // const workbook = XLSX.utils.book_new();
+        // const worksheet = XLSX.utils.aoa_to_sheet(datosExcel);
+
+        // // Añadir la hoja al libro
+        // XLSX.utils.book_append_sheet(workbook, worksheet, "Datos");
+
+        // // Descargar el archivo Excel
+        // XLSX.writeFile(workbook, "datos.xlsx");
+    }
+</script>
+    
+
+{% endblock content %}

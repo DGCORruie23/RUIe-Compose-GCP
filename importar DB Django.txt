@@ -1,0 +1,16 @@
+
+python manage.py dumpdata --indent=4 auth.user > dbRUIEexport_auth_user.json
+python manage.py dumpdata --indent=4 usuario.usuario > dbRUIEexport_usuario.json
+python manage.py dumpdata usuario.puntosinternacion > dbRUIEexport_puntosInternacion.json
+python manage.py dumpdata --indent=4 usuario.paises > dbRUIEexport_paises.json
+python manage.py dumpdata --indent=4 usuario.municipios > dbRUIEexport_municipios.json
+python manage.py dumpdata --indent=4 usuario.msgupdate > dbRUIEexport_msgupdate.json
+python manage.py dumpdata usuario.estadofuerza > dbRUIEexport_EdoFuerza.json
+python manage.py dumpdata usuario.disuadidospunto > dbRUIEexport_disuadidos.json
+python manage.py dumpdata usuario.conteorapidopunto > dbRUIEexport_conteoRapido.json
+python manage.py dumpdata usuarioL.usuariol > dbRUIEexport_usuariol.json
+
+python manage.py dumpdata --indent=4 usuario.rescatepunto > dbRUIEexport_rescatepunto.json
+
+
+sudo docker-compose exec web python manage.py loaddata ./dbRUIEexport_auth_user.json

@@ -1,0 +1,40 @@
+{% extends "base/base.html" %}
+
+{% load static %}
+
+{% block title %}Estadistica{% endblock title %}
+
+{% block estadistica %}
+    {% if request.user.is_superuser %}
+        <a href="{% url 'estadistica' %}" class="bg-inm-verde-100 text-white px-6 py-3 rounded-xl hover:bg-inm-marron-200">Estadistica</a>
+    {% endif %}
+{% endblock estadistica %}
+
+{% block content %}
+<div class="flex-grow flex flex-col justify-center items-center p-4">
+
+    <!-- Contenedor de dos columnas -->
+    <div class="grid grid-cols-2 gap-8 w-full max-w-2xl">
+        
+        <!-- Columna Izquierda -->
+        <div class="flex flex-col justify-center items-center p-4">
+            <a type="button" href="{% url 'busqueda' %}" class="ml-8 basis-1/8 py-5 px-5 mx-1 bg-inm-rojo-300 hover:bg-inm-marron-100 hover:text-2xl rounded-xl text-xl text-white text-center">
+                Reincidencia Diaria
+            </a>
+            {% comment %} <div class=" ml-8 basis-1/8 py-5 px-5 mx-1 bg-inm-rojo-300 hover:bg-inm-marron-100 rounded-xl text-white text-center">
+                <a href="{% url 'busqueda' %}" class="">Reincidencia Diaria</a>
+            </div>  {% endcomment %}
+        </div>
+        
+        <!-- Columna Derecha -->
+        <div class="flex justify-center items-center p-4">
+            <a type="button" href="{% url 'reincidente' %}" class="ml-6 basis-1/8 py-5 px-5 mx-1 bg-inm-rojo-300 hover:bg-inm-marron-100 hover:text-2xl rounded-xl text-xl text-white text-center">
+                Busqueda de Reincidente por nombre
+            </a>
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock content %}

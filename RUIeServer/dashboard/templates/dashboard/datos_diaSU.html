@@ -1,0 +1,214 @@
+{% extends "base/base.html" %}
+
+{% block title %}
+    {% comment %} {% for user in usuario %}
+        Dashboard de {{user.oficinaR}}
+    {% endfor %}  {% endcomment %}
+    Dashboard de {{usuario.0.oficinaR}}
+{% endblock title %}
+
+{% block navigation %}
+    Panel de Control de Administrador
+{% endblock navigation %}
+
+{% block linkSuperior %}
+{% comment %} <form action="." method="post">
+    {% csrf_token %}
+        <input name="username" type="hidden">
+        <input name="password" type="hidden">
+    <button type="submit" class="py-4 px-6 bg-blue-400 rounded-xl text-white hover:text-inm-verde-100">Descargar</button>
+</form> {% endcomment %}
+{% comment %} <a href="{% url 'descargas' %}" class="py-4 px-6 bg-blue-400 rounded-xl text-white hover:text-inm-verde-100">Descargas</a>            {% endcomment %}
+{% endblock linkSuperior %}
+
+
+{% block content %}
+    {% comment %} <h1 class="text-xl">Dashboard de {{usuario.0.oficinaR}} </h1> {% endcomment %}
+
+    <div class="py-2 flex flex-row center">
+        <input class="px-2 rounded border-2 border-inm-marron-100 text-inm-cafe-200 text-sm text-center mx-3" type="text" id="myInputAG" onkeyup="myFunction(5, 'myInputAG')" placeholder="Buscar por Agente" name="filtro_Agente">
+
+        <input class="px-2 rounded border-2 border-inm-marron-100 text-inm-cafe-200 text-sm text-center mx-3" type="text" id="myInputOR" onkeyup="myFunction(2, 'myInputOR')" placeholder="Buscar por Oficina" name="filtro_OR">
+
+        <input class="px-2 rounded border-2 border-inm-marron-100 text-inm-cafe-200 text-sm text-center mx-3" type="text" id="myInputHRS" onkeyup="myFunction(4, 'myInputHRS')" placeholder="Buscar por Hora" name="filtro_hora">
+
+        <input class="px-2 rounded border-2 border-inm-marron-100 text-inm-cafe-200 text-sm text-center mx-3" type="text" id="myInputP" onkeyup="myFunction(7, 'myInputP')" placeholder="Buscar por Punto" name="filtro_punto">
+
+        <input class="px-2 rounded border-2 border-inm-marron-100 text-inm-cafe-200 text-sm text-center mx-3" type="text" id="myInputNac" onkeyup="myFunction(8, 'myInputNac')" placeholder="Buscar por Nacionalidad" name="filtro_nacio">
+
+        <label class="px-2 py-2 mx-3 text-inm-rojo-200" id="totales"></label>
+
+        <form action="{% url 'descarga_excel' %}" method="post">
+            {% csrf_token %}
+                <input name="fechaDescarga" type="hidden" value="{{fecha_P}}" id="id_fechaDescarga">
+                <input name="oficina" type="hidden" value="{{usuario.0.oficinaR}}" id="id_oficina">
+            <button type="submit" class="py-2 px-6 bg-blue-400 rounded-xl text-white hover:text-inm-verde-100">Descargar</button>
+        </form>
+    </div>
+
+    <form method="post" action="{% url 'eliminar_varios_registros' %}">
+        {% csrf_token %}
+        <input class="py-1 px-2 bg-inm-rojo-300 rounded-xl text-sm text-white hover:bg-inm-rojo-100" type="submit" value="Eliminar">
+    <table id="myTable" class="border-separate border border-slate-200 hover:table-fixed" >
+        <thead class="bg-inm-cafe-100 text-white">
+            <tr>
+                <th class="border border-slate-300"><input type="checkbox" id="cboxAll"/></th>
+                <th class="border border-slate-300">#</th>
+                <th class="border border-slate-300 px-3 text-sm">Oficina</th>
+                <th class="border border-slate-300 px-3 text-sm">Fecha</th>
+                <th class="border border-slate-300 px-1 text-sm">Hora</th>
+                <th class="border border-slate-300 text-sm">Nombre del Agente</th>
+
+                <th class="border border-slate-300 text-sm">Tipo de Punto</th>
+
+                {% comment %} <th class="border border-slate-300">Aeropuerto</th>
+                <th class="border border-slate-300">Carretero</th>
+                <th class="border border-slate-300">Casa de seguridad</th>
+                <th class="border border-slate-300">Central de Autobus</th>
+                <th class="border border-slate-300">Ferrocarril</th>
+                <th class="border border-slate-300">Hotel</th>
+                <th class="border border-slate-300">Puestos a Disposicion</th>
+                <th class="border border-slate-300">voluntarios</th> {% endcomment %}
+
+                {% comment %} <th class="border border-slate-300">Municipio</th> {% endcomment %}
+                <th class="border border-slate-300 text-sm">Punto Estrategico</th>
+                <th class="border border-slate-300 text-sm">Nacionalidad</th>
+                <th class="border border-slate-300 px-2 text-sm">ISO</th>
+                <th class="border border-slate-300">Nombre</th>
+                <th class="border border-slate-300">Apellidos</th>
+                <th class="border border-slate-300 text-sm">Parentesco</th>
+                <th class="border border-slate-300 text-xs">Fecha de Nacimiento</th>
+                <th class="border border-slate-300 text-sm">Edad</th>
+                <th class="border border-slate-300 px-2">Sexo</th>
+                <th class="border border-slate-300 text-sm">Embarazo</th>
+                <th class="border border-slate-300 text-sm">Numero de familia</th>
+            </tr>
+        </thead>
+        <tbody class="bg-gray-200">
+            {% for val in values %}
+            <tr>
+                <td class="text-xs text-center"><input type="checkbox" id="cbox{{val.idRescate}}" name="registros_seleccionados" value="{{val.idRescate}}" class="checkbox" onClick="checkALLT(this)" /></td>
+                <td class="text-xs text-center">{{ forloop.counter }}</td>
+                <td class="text-xs text-center">{{val.oficinaRepre}}</td>
+                <td class="text-xs text-center">{{val.fecha}}</td>
+                <td class="text-xs text-center">{{val.hora}}</td>
+                <td class="text-xs text-center">{{val.nombreAgente}}</td>
+
+                {% if val.aeropuerto == True %}
+                    <td class="text-xs text-center">Aeropuerto</td>
+                {% elif val.carretero == True %}
+                    <td class="text-xs text-center">Carretero</td>
+                {% elif val.casaSeguridad == True %}
+                    <td class="text-xs text-center">Casa de Seguridad</td> 
+                {% elif val.centralAutobus == True %}
+                    <td class="text-xs text-center">Central de Autobus</td>  
+                {% elif val.ferrocarril == True %}
+                    <td class="text-xs text-center">Ferrocarril</td>
+                {% elif val.hotel == True %}
+                    <td class="text-xs text-center">Hotel</td>
+                {% elif val.puestosADispo == True %}
+                    <td class="text-xs text-center">Puestos a Disposición</td>
+                {% elif val.voluntarios == True %}
+                    <td class="text-xs text-center">Voluntarios</td>
+                {% else %}
+                    <td class="text-xs text-center">Otro</td>
+                {% endif %}
+                {% comment %} <th>{{val.aeropuerto}}</th>
+                <th>{{val.carretero}}</th>
+                <th>{{val.casaSeguridad}}</th>
+                <th>{{val.centralAutobus}}</th>
+                <th>{{val.ferrocarril}}</th>
+                <th>{{val.hotel}}</th>
+                <th>{{val.puestosADispo}}</th>
+                <th>{{val.voluntarios}}</th> {% endcomment %}
+
+
+                {% comment %} <th>{{val.municipio}}</th> {% endcomment %}
+                <td class="text-xs text-center">{{val.puntoEstra}}</td>
+                <td class="text-xs text-center">{{val.nacionalidad}}</td>
+                <td class="text-xs text-center">{{val.iso3}}</td>
+                <td class="text-xs text-center">{{val.nombre}}</td>
+                <td class="text-xs text-blue-500 text-center"><a href="{% url 'editar' val.idRescate %}">{{val.apellidos}}</a></td>
+                <td class="text-xs text-center">{{val.parentesco}}</td>
+                <td class="text-xs text-center">{{val.fechaNacimiento}}</td>
+                <td class="text-xs text-center">{{val.edad}}</td>
+                {% if val.sexo == True %}
+                <td class="text-xs text-center">Hombre</td>
+                {% else %}
+                <td class="text-xs text-center">Mujer</td>
+                {% endif %}
+
+                {% if val.embarazo == True %}
+                <td class="text-xs text-center">Si</td>
+                {% else %}
+                <td class="text-xs text-center">No</td>
+                {% endif %}
+
+                {% if val.numFamilia == 0 %}
+                <td class="text-xs text-center"> </td>
+                {% else %}
+                <td class="text-xs text-center">{{val.numFamilia}}</td>
+                {% endif %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</form>
+    
+
+    <script>
+
+        var checkboxSeleccionarTodo = document.getElementById('cboxAll');
+        checkboxSeleccionarTodo.addEventListener('change', function () {
+            
+            if(checkboxSeleccionarTodo.checked === true){
+                var filas = document.querySelectorAll('tbody tr');
+                // console.log(filas)
+                filas.forEach(function (fila) {
+                    if(fila.style.display !== 'none'){
+                        // console.log(fila.cells[0])
+                        var tdCheckbox = fila.cells[0];
+                        // Accede al elemento <input> dentro del <td>
+                        var checkbox = tdCheckbox.querySelector('input.checkbox');
+                        if (checkbox) {
+                        checkbox.checked = true;
+                        }
+                    }
+                });
+            } else{
+                var checkboxes = document.querySelectorAll('.checkbox');
+                // Itera sobre los checkboxes y los marca/desmarca según el estado del checkbox "Seleccionar Todo"
+                checkboxes.forEach(function (checkbox) {
+                    checkbox.checked = checkboxSeleccionarTodo.checked;
+                });
+            }
+        });
+
+        function myFunction(x1,idInput) {
+          // Declare variables 
+          var input, filter, table, tr, td, i, txtValue, conteo;
+          input = document.getElementById(idInput);
+          filter = input.value.toUpperCase();
+          table = document.getElementById("myTable");
+          tr = table.getElementsByTagName("tr");
+        
+          conteo = 0
+          // Loop through all table rows, and hide those who don't match the search query
+          for (i = 0; i < tr.length; i++) {
+            td = tr[i].getElementsByTagName("td")[x1];
+            if (td) {
+              txtValue = td.textContent || td.innerText;
+              if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                tr[i].style.display = "";
+                conteo++
+              } else {
+                tr[i].style.display = "none";
+              }
+            } 
+          }
+          
+          document.getElementById("totales").innerHTML = "Registros: " + conteo
+        }
+    </script>
+
+{% endblock content %}
