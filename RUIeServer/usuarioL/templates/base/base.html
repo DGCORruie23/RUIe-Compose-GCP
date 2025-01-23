@@ -70,6 +70,15 @@
       justify-content: center;
     }
 
+    .main-footer{
+        background-color: #611232;
+        min-height: 56px;
+        color: #FFF;
+        padding: 0px 0 0px;
+        text-align: left;
+        font-weight: 300;
+    }
+
     footer {
 
       padding: 10px 0;
@@ -83,6 +92,12 @@
       justify-content: space-between;
       align-items: center;
       flex-wrap: wrap-reverse;
+    }
+
+    .footer-pleca {
+      background-color: #fff;
+      background-image: url(https://framework-gb.cdn.gob.mx/gobmx/img/pleca.svg);
+      background-repeat: repeat-x;
     }
 
     .logo {
@@ -178,15 +193,19 @@
 
   {% endblock content %}
 
-  <footer>
+  <footer class="main-footer">
     <div class="footer_container">
-      <div class="logo"> <img src="{% static 'icons/felipe.png' %}" width="150px" alt="logo"
-          style="margin-right: 150px;"></div>
+      <div class="logo"> <img src="https://framework-gb.cdn.gob.mx/gobmx/img/logo_blanco.svg" width="150px" alt="logo"
+          style="margin-right: 150px; margin-top: 5px; margin-bottom: 5px"></div>
       <div class="social_media">
       </div>
+    </div>
+    <div class="footer-pleca">
+      <br>
     </div>
   </footer>
   <script src="https://cdn.jsdelivr.net/npm/tw-elements/dist/js/tw-elements.umd.min.js"></script>
 </body>
 
 </html>
+
