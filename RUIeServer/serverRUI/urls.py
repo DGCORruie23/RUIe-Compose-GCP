@@ -21,6 +21,8 @@ from usuario import views
 from usuarioL.views import index, pagina404
 from dashboard import views as viewsDash
 from django.contrib.auth import views as viewsL
+from django.conf.urls.static import static
+from django.conf import settings
 
 urlpatterns = [
     path('', index, name="index"),
@@ -76,5 +78,10 @@ urlpatterns = [
     # path('info/pruebas/usuarios/anadirUsuario', viewsDash.agregar_usuario, name='agregar_usuario'),
     # path('info/pruebas/usuarios/eliminarUsuario/<int:id_usuario>', viewsDash.eliminarUsuario, name='eliminar_usuario'),
 ]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+else:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 handler404 = pagina404

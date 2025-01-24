@@ -12,6 +12,8 @@ import openpyxl as opxl
 from openpyxl.writer.excel import save_virtual_workbook
 from datetime import *
 from django.contrib.auth.decorators import login_required
+from django.conf import settings
+import os
 
 # Create your views here.
 
@@ -826,11 +828,15 @@ def servirApps(request):
 @csrf_exempt
 def downloadAPK(request):
     if request.method == 'GET':
-        appAndroid = open('tmp/ruie.apk', 'rb')
+        apk_path = os.path.join(settings.MEDIA_ROOT, 'ruie.apk')
 
-        response = HttpResponse(appAndroid, content_type="application/vnd.android.package-archive")
-        response["Content-disposition"] = "attachment; filename=ruie.apk"
-        return response
+        try:
+            with open(apk_path, 'rb') as appAndroid:
+                response = HttpResponse(appAndroid, content_type="application/vnd.android.package-archive")
+                response["Content-Disposition"] = "attachment; filename=ruie.apk"
+                return response
+        except FileNotFoundError:
+            return HttpResponse("File not found.", status=404)
     
 @csrf_exempt
 def pagDuplicados(request):

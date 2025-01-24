@@ -127,7 +127,9 @@
       font-weight: bold;
     }
 
-
+    .header-style {
+      background-color: #10312B;
+    }
 
     .logoGOB {
 
@@ -140,33 +142,36 @@
 
 <body class="flex flex-col mx-auto my-auto min-h-screen">
   
-  <header class="">
+  <header class="header-style">
     <div class="flex items-center justify-between">
         <!-- Columna A: Logo -->
-        <div class="w-1/8 flex justify-start p-2">
+        <!-- <div class="w-1/4 flex justify-start p-2">
           <a href="/">
             <img src="{% static 'icons/logo.png' %}" alt="Logo A" class="h-20 w-20">
           </a>
-        </div>
+        </div> -->
         
         <!-- Columna B: Título y Subtítulo -->
-        <div class="w-3/4 text-center p-2 bg-inm-verde-100">
-            <h1 class="text-2xl md:text-2xl font-family: 'Montserrat' text-2xl text-gray-100 font-bold">PANEL DE CONTROL</h1>
+        <div class="w-4/4 text-center p-2 bg-[#10312B] mx-10">
+            <!-- <h1 class="text-2xl md:text-2xl font-family: 'Montserrat' text-2xl text-gray-100 font-bold">PANEL DE CONTROL</h1>
             <h3 class="text-lg md:text-lg text-gray-100">
               <strong class="text-inm-marron-100">R</strong>eporte
               <strong class="text-inm-marron-100">Ú</strong>nico de
               <strong class="text-inm-marron-100">I</strong>nformación
               <strong class="text-inm-marron-100">E</strong>lectrónico
             </h3>
-            <h5 class="text-lg md:text-sm text-inm-marron-200"> <strong>RESCATE-CAPTURA</strong></h3>
+            <h5 class="text-lg md:text-sm text-inm-marron-200"> <strong>RESCATE-CAPTURA</strong></h3> -->
+              <a href="/">
+                <img src="{% static 'icons/logo3.png' %}" alt="Logo Completo" class="scale-[0.6]">
+              </a>
         </div>
         
         <!-- Columna C: Logo -->
-        <div class="w-1/8 flex justify-end p-2">
+        <!-- <div class="w-1/4 flex justify-end p-2">
             {% comment %} <img src="{% static 'icons/LOGO3.png' %}" alt="Logo G" class="h-16"> {% endcomment %}
-            <img src="{% static 'icons/inm.png' %}" alt="Logo C" class="h-16">
+            <img src="{% static 'icons/logo2.png' %}" alt="Logo C" class="h-16 scale-60">
         </div>
-    </div>
+    </div> -->
 </header>
    
   {% if request.user.is_authenticated %}

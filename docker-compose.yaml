@@ -13,6 +13,7 @@ services:
       - db
     volumes: 
       - ./static_volume:/src/backendRUIe/static
+      - ./media_volume:/src/backendRUIe/media
 
   db:
     container_name: dbPGruie
@@ -34,6 +35,7 @@ services:
       - web
     volumes:
       - ./static_volume:/src/backendRUIe/static
+      - ./media_volume:/src/backendRUIe/media
     environment:
       - VIRTUAL_HOST=ruie.dgcor.com, www.ruie.dgcor.com
       - LETSENCRYPT_HOST=ruie.dgcor.com, www.ruie.dgcor.com
