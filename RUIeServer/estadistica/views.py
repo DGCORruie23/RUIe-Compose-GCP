@@ -48,7 +48,7 @@ def reincidentes_xdia_ajax(request):
         # array_fechasDia = [(fechaIN + timedelta(days=d)).strftime("%d-%m-%y") for d in range((fechaFIN - fechaIN).days + 1)]
 
         # Rescates por dia de las OR sin chiapas y tabasco
-        rescates_por_dia = RescatePunto.objects.filter(fecha__in= array_fechasDia).exclude(oficinaRepre__in=["CHIAPAS", "TABASCO"]) \
+        rescates_por_dia = RescatePunto.objects.filter(fecha__in= array_fechasDia).exclude(oficinaRepre__in=["CHIAPAS"]) \
             .values('nombre', 'apellidos', 'iso3', 'puntoEstra', 'oficinaRepre') \
             .order_by('iso3')
 
