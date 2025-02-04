@@ -12,7 +12,7 @@ ENV PYTHONUNBUFFERED 1
 RUN pip install --upgrade pip
 
 #actualizar e instalar conectores postgres
-RUN apt-get update && apt-get install -y gcc libpq-dev python3-dev musl-dev postgresql-client
+RUN apt-get update && apt-get install -y gcc libpq-dev python3-dev musl-dev postgresql-client python-gi-dev gtk+3
 
 #Copiar los requisitos del sistema
 COPY ./req.txt ./

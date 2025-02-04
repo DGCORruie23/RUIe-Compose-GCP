@@ -1,13 +1,20 @@
 from django.shortcuts import render
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
+from django.db.models import Count
+from django.template.loader import get_template
 from django.contrib.auth.decorators import login_required
+
 from usuarioL.models import usuarioL
 from usuario.models import RescatePunto, EstadoFuerza, PuntosInternacion, Municipios, Paises, Usuario
-from datetime import *
-from django.db.models import Count
+
 from openpyxl import Workbook
 from openpyxl import load_workbook
+
+
+from weasyprint import HTML
+from datetime import *
 import os
+
 
 # Create your views here.
 @login_required
@@ -142,3 +149,63 @@ def buscar_reincidente_ajax(request):
         return JsonResponse({'data': data}, safe=False)
     
     return JsonResponse({'error': 'Petición inválida'}, status=400)
+
+
+def generar_pdf(request):
+    # fecha a elegir
+    fechaB = datetime.strptime(f"2025-01-01", "%Y-%m-%d")
+    # Obtener los datos de la base de datos
+    estadoF = EstadoFuerza.objects.all()
+    oficinas = EstadoFuerza.objects.values_list("oficinaR", flat=True).distinct()
+    fecha = fechaB.strftime("%d/%m/%Y")
+    fechaIN = fechaB.strftime("%d-%m-%y")
+
+    rescates_por_dia = RescatePunto.objects.filter(fecha=fechaIN)\
+            .values("oficinaRepre")\
+            .annotate(conteo=Count('idRescate')) \
+            .order_by('oficinaRepre')
+    
+    conteo_rescates = { nombre: {"conteo": 0} for nombre in oficinas }
+
+    for dato in rescates_por_dia:
+        conteo_rescates[dato["oficinaRepre"]]["conteo"] = dato["conteo"]
+
+    rescates_final = [[clave, valor['conteo']] for clave, valor in conteo_rescates.items()]
+
+
+
+    rescates_aereos = RescatePunto.objects.filter(fecha=fechaIN, aeropuerto=True)\
+            .values("oficinaRepre")\
+            .annotate(conteo=Count('idRescate')) \
+            .order_by('oficinaRepre')
+    
+    conteo_rescates_aero = { nombre: {"conteo": 0} for nombre in oficinas }
+
+    for dato in rescates_aereos:
+        conteo_rescates_aero[dato["oficinaRepre"]]["conteo"] = dato["conteo"]
+    
+    rescates_aereos = [[clave, valor['conteo']] for clave, valor in conteo_rescates_aero.items()]
+    
+
+    # print(resultado_final)
+
+    # Crear el contexto con los datos
+    context = {
+        "datosF": estadoF,
+        "oficinas": oficinas,
+        "fecha_actual": fecha,
+        "rescates": rescates_final,
+        "rescates_a": rescates_aereos,
+    }
+
+    # Renderizar el template HTML con los datos
+    template = get_template("estadistica/reporte.html")
+    html_string = template.render(context)
+
+    # Crear el PDF con WeasyPrint
+    pdf_file = HTML(string=html_string).write_pdf()
+
+    # Devolver el PDF como respuesta HTTP
+    response = HttpResponse(pdf_file, content_type="application/pdf")
+    response["Content-Disposition"] = 'inline; filename="reporte.pdf"'
+    return response
