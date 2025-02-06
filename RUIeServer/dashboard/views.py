@@ -161,7 +161,6 @@ def tabla_registros(request, year=None, month=None, day=None):
         return render(request, "dashboard/datos_diaSU.html", context=data)
     else:
         valores = RescatePunto.objects.filter(fecha=fechaR).filter(oficinaRepre=userDataI[0].oficinaR)
-        print("aaaaaaaaaaaaaa")
         data = {
         'usuario' : userDataI,
         'form': form,
@@ -221,9 +220,9 @@ def editarData(request, pk):
                 'aeropuerto',
                 'carretero',
                 'central de autobus',
-                'casa de seguridad',
+                'disuadidos',
                 'ferrocarril',
-                'hotel',
+                'visitas de verificación',
                 'puestos a disposición',
                 'voluntarios',
             ]
@@ -349,7 +348,7 @@ def editarData(request, pk):
             if form.is_valid():
                 form.save()
                 fecha_form = form.cleaned_data['fecha']
-                print("entra a guardar info")
+                # print("entra a guardar info")
                 # print(fecha_form)
                 messages.success(request, "El registro ha sido modificado")
                 fecha_seleccionada = datetime.strptime(f"{fecha_form}", "%d-%m-%y")

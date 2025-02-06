@@ -44,9 +44,9 @@ types_Puntos = [
         ("aeropuerto", "aeropuerto"),
         ("carretero", "carretero"),
         ("central de autobus", "central de autobus"),
-        ("casa de seguridad", "casa de seguridad"),
+        ("disuadidos", "disuadidos"),
         ("ferrocarril", "ferrocarril"),
-        ("hotel", "hotel"),
+        ("visitas de verificación", "visitas de verificación"),
         ("puestos a disposición", "puestos a disposición"),
         ("voluntarios", "voluntarios"),
     ]
@@ -72,40 +72,40 @@ types_PRescate = []
 
 ### Comentar para nueva base
 
-# puntosF_ALL = EstadoFuerza.objects.all()
+puntosF_ALL = EstadoFuerza.objects.all()
 
 
-# for puntos in puntosF_ALL:
-#     nomS = str(puntos.nomPuntoRevision)
-#     nomS1 = ""
-#     if nomS[0]== " ":
-#         nomS1 = nomS[1:]
-#     else:
-#         nomS1 = nomS
+for puntos in puntosF_ALL:
+    nomS = str(puntos.nomPuntoRevision)
+    nomS1 = ""
+    if nomS[0]== " ":
+        nomS1 = nomS[1:]
+    else:
+        nomS1 = nomS
 
-#     types_PRescate.append((nomS1, nomS1))
+    types_PRescate.append((nomS1, nomS1))
 
-# for puntos in PuntosInternacion.objects.all():
-#     nomS = str(puntos.nombrePunto)
-#     nomS1 = ""
-#     if nomS[0]== " ":
-#         nomS1 = nomS[1:]
-#     else:
-#         nomS1 = nomS
+for puntos in PuntosInternacion.objects.all():
+    nomS = str(puntos.nombrePunto)
+    nomS1 = ""
+    if nomS[0]== " ":
+        nomS1 = nomS[1:]
+    else:
+        nomS1 = nomS
 
-#     types_PRescate.append((nomS1, nomS1))
+    types_PRescate.append((nomS1, nomS1))
 
-# types_PRescate.append(("Sin Información", "Sin Información"))
+types_PRescate.append(("Sin Información", "Sin Información"))
 
-# for mun in Municipios.objects.all():
-#     nomS = str(mun.nomMunicipio)
-#     nomS1 = ""
-#     if nomS[0]== " ":
-#         nomS1 = nomS[1:]
-#     else:
-#         nomS1 = nomS
+for mun in Municipios.objects.all():
+    nomS = str(mun.nomMunicipio)
+    nomS1 = ""
+    if nomS[0]== " ":
+        nomS1 = nomS[1:]
+    else:
+        nomS1 = nomS
 
-#     types_PRescate.append((nomS1, nomS1))
+    types_PRescate.append((nomS1, nomS1))
 
 ## hasta aqui
 
@@ -113,9 +113,9 @@ types_paises = []
 
 ## Segunda parte para comentar
 
-# for paises_I in Paises.objects.all():
-#     nomPS = str(paises_I.nombre_pais)
-#     types_paises.append((nomPS, nomPS))
+for paises_I in Paises.objects.all():
+    nomPS = str(paises_I.nombre_pais)
+    types_paises.append((nomPS, nomPS))
 
 ## hasta aqui
 
@@ -241,11 +241,11 @@ class RegistroNewForm(forms.Form):
             db_carre = True
         elif(self.data['tipo_punto'] == 'central de autobus'):
             db_centralA = True
-        elif(self.data['tipo_punto'] == 'casa de seguridad'):
+        elif(self.data['tipo_punto'] == 'disuadidos'):
             db_casaS = True
         elif(self.data['tipo_punto'] == 'ferrocarril'):
             db_ferro = True
-        elif(self.data['tipo_punto'] == 'hotel'):
+        elif(self.data['tipo_punto'] == 'visitas de verificación'):
             db_hotel = True
         elif(self.data['tipo_punto'] == 'puestos a disposición'):
             db_puestos = True
