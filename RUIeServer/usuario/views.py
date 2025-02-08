@@ -1186,11 +1186,21 @@ def generarExcelUsuarios(request):
                 elif valor.estado == '32':
                     estado = "ZACATECAS"
 
+                disposi = ""
+
+                if valor.tipo_disp == '1':
+                    disposi = "ANDROID"
+                elif valor.tipo_disp == '2':
+                    disposi = "IPHONE"
+                else:
+                    disposi = "OTRO"
+
                 worksheet.append([
                     estado,
                     valor.nickname,
                     valor.nombre,
                     valor.apellido,
+                    disposi,
                 ])
 
 

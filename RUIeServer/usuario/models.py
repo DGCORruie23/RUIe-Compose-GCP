@@ -43,13 +43,20 @@ class Usuario(models.Model):
         ("2", "Validador"),
         ("3", "Capturador"),
     ]
+    types_disp = [
+        ("1" , "Android"),
+        ("2", "IPhone"),
+        ("3", "Otro"),
+    ]
     idUser = models.AutoField(primary_key=True)
     nickname = models.CharField(max_length = 30)
     nombre = models.CharField(max_length=100)
     apellido = models.CharField(max_length=200)
     password = models.CharField(max_length=250)
+    str_pass = models.CharField(max_length=250, blank=True, default="")
     estado = models.CharField(max_length=2, choices=types_ORS, default="9")
     tipo = models.CharField(max_length=1, choices=types_user, default="3")
+    tipo_disp = models.CharField(max_length=1, choices=types_disp, default="1")
 
     def save(self, *args, **kwargs):
         self.password = make_password(self.password)

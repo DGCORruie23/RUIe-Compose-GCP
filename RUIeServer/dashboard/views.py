@@ -638,11 +638,11 @@ def editar_usuario(request, id_usuario):
         'form': usuario
     }
     if request.method == 'POST':
-        print("Entró al POST")
+        # print("Entró al POST")
         formulario = UsuarioForm(data = request.POST, instance=usuario)
 
         if formulario.is_valid():
-            print("Entró a la validación")
+            # print("Entró a la validación")
 
             Usuario.objects.filter(idUser = id_usuario).update(
                 idUser = id_usuario,
@@ -657,7 +657,7 @@ def editar_usuario(request, id_usuario):
             data['form'] = formulario
             return redirect('pagina_pruebas_usuarios')
         else:
-            print("Entró al ELSE")
+            # print("Entró al ELSE")
             idUser = request.POST.get('idUser')
             password = request.POST.get('password')
             Usuario.objects.filter(idUser = idUser).update(
