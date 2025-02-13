@@ -26,7 +26,8 @@
 
     <!-- Fila Superior -->
     <div class="bg-white p-4 rounded-lg shadow mb-8">
-        <h2 class="text-xl font-semibold">Seleccione fecha de busqueda:</h2>
+        <h1 class="text-xl text-center font-semibold">Reincidencia diaria</h1>
+        <h2 class="text-xxl font-semibold">Seleccione fecha de busqueda:</h2>
         <form id="form-fecha">
             {% csrf_token %}
             <input type="date" name="fecha" id="id_fecha">
@@ -56,11 +57,54 @@
 
     </div>
 
+    <div>
+        <div class="bg-white p-4 rounded-lg shadow mb-8">
+            <h1 class="text-xl text-center font-semibold">Reincidencia por fechas</h1>
+            <h2 class="text-xxl font-semibold">Seleccione Intervalo de tiempo de busqueda:</h2>
+            <center>
+                <form id="form-fecha1">
+                    {% csrf_token %}
+                    <label class="font-semibold text-inm-marron-100">Fecha de Inicio</label>
+                    <input type="date" name="fechaI" id="id_fechaI">
+                    <br>
+                    <label class="font-semibold text-inm-marron-100">Fecha de Termino</label>
+                    <input type="date" name="fechaF" id="id_fechaF">
+                    <br>
+                    <button class="bg-inm-verde-200 px-1 rounded-l text-white hover:bg-inm-rojo-200" type="submit">Buscar</button>
+                </form>
+            </center>
+            
+        </div>
+    
+        <!-- Contenedor de carga -->
+        <div id="loading1" hidden class="bg-white p-4 rounded-lg shadow mb-8">Cargando resultados...</div>
+    
+    
+        <!-- Contenedor de dos columnas -->
+        <div id="seccion1" class="grid grid-cols-2 gap-8 w-full max-w-2xl hidden">
+            
+            <!-- Columna Izquierda -->
+            <div class="flex flex-col justify-center items-center bg-white p-4 rounded-lg shadow">
+                <h2 class="text-xl font-semibold text-center">Datos de Reincidentes<br><h2 id="fechaR1" class="text-xl font-semibold text-center"></h2><br></h2>
+                <h3 id="resultados1" class="text-xl text-gray-600"></h3>
+            </div>
+            
+            <!-- Columna Derecha -->
+            <div class="flex justify-center items-center bg-white p-4 rounded-lg shadow">
+                <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" onclick="generarExcel1()">
+                    Descargar <br> Listado
+                </button>
+            </div>
+    
+        </div>
+    </div>
+
 </div>
 
 
 <script>
     let infoExcel = null;
+    let infoExcel1 = null;
     let fechaArchivo = "2024-01-01";
 
     $(document).ready(function() {
@@ -91,7 +135,7 @@
 
                     if (response.data.length > 0) {
                         infoExcel = response.data[0].resultados;
-                        resultados.append(response.data[0].conteo);
+                        resultados.append((response.data[0].conteo).toLocaleString());
                         fechaC.append(response.data[0].fecha);
                         fechaArchivo = response.data[0].fecha;
                         // Diccionario pasado desde Django
@@ -106,6 +150,61 @@
                 }
             });
         });
+
+        $('#form-fecha1').on('submit', function(e) {
+            e.preventDefault();
+
+            $('#loading1').show();
+
+            let fechaI = $('#id_fechaI').val();
+            let fechaF = $('#id_fechaF').val();
+        
+            $.ajax({
+                url: '{% url "reincidenciaFechas" %}',
+                type: 'GET',
+                data: {
+                    'fechaI': fechaI,
+                    'fechaF': fechaF,
+                },
+                success: function(response) {
+                    $('#loading1').hide();
+                    $('#seccion1').show();
+
+                    let resultados = $('#resultados1');
+                    let fechaC = $('#fechaR1');
+                    resultados.empty(); // Limpiar resultados previos
+                    fechaC.empty();
+
+                    //console.log(response.data[0].resultados);
+                    console.log(response.data[0].resultados);
+
+                    if (response.data.length > 0) {
+                        infoExcel1 = response.data[0].resultados;
+                        resultados.append('Reincidentes: ');
+                        resultados.append((response.data[0].conteo).toLocaleString());
+                        resultados.append('<br>');
+                        resultados.append('Registros: ');
+                        resultados.append((response.data[0].total_r).toLocaleString());
+                        let totalR = response.data[0].total_r - response.data[0].conteo;
+                        resultados.append('<br>');
+                        resultados.append('Rescate Real: ');
+                        resultados.append(totalR.toLocaleString());
+
+                        fechaC.append(response.data[0].fecha);
+                        fechaArchivo1 = response.data[0].fecha;
+                        // Diccionario pasado desde Django
+                    } else {
+                        resultados.append('<h1>No se encontraron resultados</h1>');
+                    }
+                },
+                error: function() {
+                    $('#loading1').hide();
+                    $('#seccion1').hide();
+                    alert('Error al buscar los rescates');
+                }
+            });
+        });
+
     });
 
 
@@ -114,8 +213,8 @@
     {nombre: 'Aleksander', apellidos: 'Bunjaj', iso3: 'ALB', puntoEstra: 'Hermosillo, A. I.', veces: 4}
     ]
 
-    function generarExcel() {
-        const diccionario = infoExcel;
+    function generarExcel1() {
+        const diccionario = infoExcel1;
 
         const workbook = XLSX.utils.book_new();
         const worksheet = XLSX.utils.json_to_sheet(diccionario);
@@ -124,7 +223,7 @@
         XLSX.utils.book_append_sheet(workbook, worksheet, "Datos");
 
         // Descargar el archivo Excel
-        XLSX.writeFile(workbook, "Reincidentes_" + fechaArchivo + ".xlsx");
+        XLSX.writeFile(workbook, "Reincidentes_" + fechaArchivo1 + ".xlsx");
 
         
 

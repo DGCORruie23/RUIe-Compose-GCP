@@ -75,6 +75,90 @@ def reincidentes_xdia_ajax(request):
             .filter(veces__gt=1) \
             .order_by('-veces')
         
+        # print(valores_duplicados.count())
+
+        valores_duplicados1year = {
+            (valor['nombre'], valor['apellidos'], valor['iso3']): valor['veces']
+            for valor in valores_duplicados
+        }
+
+        # Comparar cada entrada de datos1 con valores_unicos y obtener el valor de veces si existe
+        resultados = []
+        for dato in datosORs:
+            clave = (dato['nombre'], dato['apellidos'], dato['iso3'])
+            veces = valores_duplicados1year.get(clave)  # Buscar en el diccionario
+            if veces is not None:
+                # print(veces)
+                resultados.append({**dato, 'veces': veces})
+            # else:
+            #     resultados.append({**dato, 'veces': 1})  # Si no existe, agregar 'veces': 0 o lo que prefieras
+
+        # Comparar cada entrada de datos1 con valores_unicos y obtener el valor de veces si existe
+        for dato in datosCHIS:
+            clave = (dato['nombre'], dato['apellidos'], dato['iso3'])
+            veces = valores_duplicados1year.get(clave)  # Buscar en el diccionario
+            if veces is not None:
+                # print(veces)
+                resultados.append({**dato, 'veces': veces + 1})
+            else:
+                resultados.append({**dato, 'veces': 1})  # Si no existe, agregar 'veces': 0 o lo que prefieras
+
+        conteo = len(resultados)
+        # # Crear el archivo Excel
+        # ruta_archivo_excel = os.path.join(os.getcwd(), f'reincidetes_{fechaIN.day:02}_{fechaIN.month:02}_Pais.xlsx')
+        
+        # print(conteo)
+
+        data = [
+            {
+                'fecha': fecha,
+                'resultados': resultados,
+                'conteo': conteo,
+            }
+        ]
+        return JsonResponse({'data': data}, safe=False)
+    
+    return JsonResponse({'error': 'Petición inválida'}, status=400)
+    
+@login_required
+def reincidentes_xfechas_ajax(request):
+    if request.method == 'GET' and request.META.get('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest':
+
+        fecha1 = request.GET.get('fechaI', '')
+        fecha2 = request.GET.get('fechaF', '')
+
+        # Convertir el formato de llegada a formato de hora
+        fechaIN = datetime.strptime(f"{fecha1}", "%Y-%m-%d")
+        fechaFIN = datetime.strptime(f"{fecha2}", "%Y-%m-%d")
+
+        fechas = f"{fecha1}--{fecha2}"
+
+         # Descomentar para una fecha especifica
+        array_fechasDia = [(fechaIN + timedelta(days=d)).strftime("%d-%m-%y") for d in range((fechaFIN - fechaIN).days + 1)]
+
+        # Rescates por dia de las OR sin chiapas y tabasco
+        rescates_por_dia = RescatePunto.objects.filter(fecha__in= array_fechasDia).exclude(oficinaRepre__in=["CHIAPAS"]) \
+            .values('nombre', 'apellidos', 'iso3', 'puntoEstra', 'oficinaRepre') \
+            .order_by('iso3')
+
+        datosORs = list(rescates_por_dia)
+
+        # Rescates por dia de la OR CHIS
+        rescates_por_dia_CHIS = RescatePunto.objects.filter(fecha__in=array_fechasDia, oficinaRepre="CHIAPAS") \
+            .values('nombre', 'apellidos', 'iso3', 'puntoEstra', 'oficinaRepre') \
+            .order_by('iso3')
+        
+        total_dia = rescates_por_dia.count() + rescates_por_dia_CHIS.count()
+
+        datosCHIS = list(rescates_por_dia_CHIS)
+
+    # Valores duplicados desde un año atras
+        valores_duplicados = RescatePunto.objects.all() \
+            .values('nombre', 'apellidos', 'iso3') \
+            .annotate(veces=Count('idRescate')) \
+            .filter(veces__gt=1) \
+            .order_by('-veces')
+        
         print(valores_duplicados.count())
 
         valores_duplicados1year = {
@@ -107,19 +191,20 @@ def reincidentes_xdia_ajax(request):
         # # Crear el archivo Excel
         # ruta_archivo_excel = os.path.join(os.getcwd(), f'reincidetes_{fechaIN.day:02}_{fechaIN.month:02}_Pais.xlsx')
         
-        print(conteo)
+        # print(conteo)
 
         data = [
             {
-                'fecha': fecha,
+                'fecha': fechas,
                 'resultados': resultados,
                 'conteo': conteo,
+                'total_r': total_dia,
             }
         ]
         return JsonResponse({'data': data}, safe=False)
     
     return JsonResponse({'error': 'Petición inválida'}, status=400)
-    
+  
 
 @login_required
 def buscar_reincidente_ajax(request):

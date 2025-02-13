@@ -21,8 +21,8 @@ class InternacionAdmin(admin.ModelAdmin):
 class UsuarioAdmin(admin.ModelAdmin):
     list_display = ['idUser','estado', 'nombre', 'apellido', 'nickname', 'str_pass','tipo_disp']
     list_editable = ['estado','nombre', 'apellido', 'nickname','str_pass','tipo_disp']
-    list_filter = ['estado','str_pass','tipo_disp']
-    search_fields = ['nickname','nombre','idUser', 'tipo_disp']
+    list_filter = ['estado','tipo_disp']
+    search_fields = ['nickname','nombre','apellido','idUser', 'tipo_disp']
 
 admin.site.register(Usuario, UsuarioAdmin)
 admin.site.register(Paises)
