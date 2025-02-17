@@ -95,6 +95,12 @@
                     Descargar <br> Listado
                 </button>
             </div>
+
+            <div class="flex justify-center items-center bg-white p-4 rounded-lg shadow">
+                <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" onclick="generarExcelNuevos()">
+                    Descargar <br> Listado Nuevos
+                </button>
+            </div>
     
         </div>
     </div>
@@ -105,6 +111,7 @@
 <script>
     let infoExcel = null;
     let infoExcel1 = null;
+    let infoExcelN = null;
     let fechaArchivo = "2024-01-01";
 
     $(document).ready(function() {
@@ -176,7 +183,7 @@
                     fechaC.empty();
 
                     //console.log(response.data[0].resultados);
-                    console.log(response.data[0].resultados);
+                    // console.log(response.data[0].resultados);
 
                     if (response.data.length > 0) {
                         infoExcel1 = response.data[0].resultados;
@@ -192,6 +199,7 @@
 
                         fechaC.append(response.data[0].fecha);
                         fechaArchivo1 = response.data[0].fecha;
+                        infoExcelN = response.data[0].rescatesNuevos;
                         // Diccionario pasado desde Django
                     } else {
                         resultados.append('<h1>No se encontraron resultados</h1>');
@@ -207,11 +215,18 @@
 
     });
 
+    function generarExcel() {
+        const diccionario = infoExcel;
 
-    [
-    {nombre: 'David', apellidos: 'Mitaj', iso3: 'ALB', puntoEstra: 'Hermosillo, A. I.', veces: 3},
-    {nombre: 'Aleksander', apellidos: 'Bunjaj', iso3: 'ALB', puntoEstra: 'Hermosillo, A. I.', veces: 4}
-    ]
+        const workbook = XLSX.utils.book_new();
+        const worksheet = XLSX.utils.json_to_sheet(diccionario);
+
+        // Añadir la hoja al libro
+        XLSX.utils.book_append_sheet(workbook, worksheet, "Datos");
+
+        // Descargar el archivo Excel
+        XLSX.writeFile(workbook, "Reincidentes_" + fechaArchivo + ".xlsx");
+    }
 
     function generarExcel1() {
         const diccionario = infoExcel1;
@@ -224,32 +239,19 @@
 
         // Descargar el archivo Excel
         XLSX.writeFile(workbook, "Reincidentes_" + fechaArchivo1 + ".xlsx");
+    }
 
-        
+    function generarExcelNuevos() {
+        const diccionario = infoExcelN;
 
-        // // Crear un array de objetos para representar los datos en el archivo Excel
-        // const datosExcel = [];
+        const workbook = XLSX.utils.book_new();
+        const worksheet = XLSX.utils.json_to_sheet(diccionario);
 
-        // // Obtener las claves del diccionario como encabezados de columnas
-        // const encabezados = Object.keys(diccionario[0]);
-        // datosExcel.push(encabezados);
+        // Añadir la hoja al libro
+        XLSX.utils.book_append_sheet(workbook, worksheet, "Datos");
 
-        // // Recorrer el diccionario y organizar los datos en filas
-        // const numFilas = diccionario[encabezados[0]].length;
-        // for (let i = 0; i < numFilas; i++) {
-        //     const fila = encabezados.map(encabezado => diccionario[encabezado][i]);
-        //     datosExcel.push(fila);
-        // }
-
-        // // Crear el libro y la hoja de cálculo
-        // const workbook = XLSX.utils.book_new();
-        // const worksheet = XLSX.utils.aoa_to_sheet(datosExcel);
-
-        // // Añadir la hoja al libro
-        // XLSX.utils.book_append_sheet(workbook, worksheet, "Datos");
-
-        // // Descargar el archivo Excel
-        // XLSX.writeFile(workbook, "datos.xlsx");
+        // Descargar el archivo Excel
+        XLSX.writeFile(workbook, "Rescates_Nuevos_" + fechaArchivo1 + ".xlsx");
     }
 </script>
     

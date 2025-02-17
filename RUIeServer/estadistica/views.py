@@ -168,12 +168,15 @@ def reincidentes_xfechas_ajax(request):
 
         # Comparar cada entrada de datos1 con valores_unicos y obtener el valor de veces si existe
         resultados = []
+        rescatesNuevos = []
         for dato in datosORs:
             clave = (dato['nombre'], dato['apellidos'], dato['iso3'])
             veces = valores_duplicados1year.get(clave)  # Buscar en el diccionario
             if veces is not None:
                 # print(veces)
                 resultados.append({**dato, 'veces': veces})
+            else:
+                rescatesNuevos.append({**dato, 'veces': 0})
             # else:
             #     resultados.append({**dato, 'veces': 1})  # Si no existe, agregar 'veces': 0 o lo que prefieras
 
@@ -199,6 +202,7 @@ def reincidentes_xfechas_ajax(request):
                 'resultados': resultados,
                 'conteo': conteo,
                 'total_r': total_dia,
+                'rescatesNuevos': rescatesNuevos,
             }
         ]
         return JsonResponse({'data': data}, safe=False)
