@@ -56,14 +56,14 @@ def reincidentes_xdia_ajax(request):
 
         # Rescates por dia de las OR sin chiapas y tabasco
         rescates_por_dia = RescatePunto.objects.filter(fecha__in= array_fechasDia).exclude(oficinaRepre__in=["CHIAPAS"]) \
-            .values('nombre', 'apellidos', 'iso3', 'puntoEstra', 'oficinaRepre', 'sexo', 'fechaNacimiento') \
+            .values('nombre', 'apellidos', 'iso3', 'puntoEstra', 'oficinaRepre', 'fecha', 'sexo', 'fechaNacimiento') \
             .order_by('iso3')
 
         datosORs = list(rescates_por_dia)
 
         # Rescates por dia de la OR CHIS
         rescates_por_dia_CHIS = RescatePunto.objects.filter(fecha__in=array_fechasDia, oficinaRepre="CHIAPAS") \
-            .values('nombre', 'apellidos', 'iso3', 'puntoEstra', 'oficinaRepre', 'sexo', 'fechaNacimiento') \
+            .values('nombre', 'apellidos', 'iso3', 'puntoEstra', 'oficinaRepre', 'fecha', 'sexo', 'fechaNacimiento') \
             .order_by('iso3')
         
         total_dia = rescates_por_dia.count() + rescates_por_dia_CHIS.count()
@@ -145,14 +145,14 @@ def reincidentes_xfechas_ajax(request):
 
         # Rescates por dia de las OR sin chiapas y tabasco
         rescates_por_dia = RescatePunto.objects.filter(fecha__in= array_fechasDia).exclude(oficinaRepre__in=["CHIAPAS"]) \
-            .values('nombre', 'apellidos', 'iso3', 'puntoEstra', 'oficinaRepre', 'sexo', 'fechaNacimiento') \
+            .values('nombre', 'apellidos', 'iso3', 'puntoEstra', 'oficinaRepre', 'fecha', 'sexo', 'fechaNacimiento') \
             .order_by('iso3')
 
         datosORs = list(rescates_por_dia)
 
         # Rescates por dia de la OR CHIS
         rescates_por_dia_CHIS = RescatePunto.objects.filter(fecha__in=array_fechasDia, oficinaRepre="CHIAPAS") \
-            .values('nombre', 'apellidos', 'iso3', 'puntoEstra', 'oficinaRepre', 'sexo', 'fechaNacimiento') \
+            .values('nombre', 'apellidos', 'iso3', 'puntoEstra', 'oficinaRepre', 'fecha', 'sexo', 'fechaNacimiento') \
             .order_by('iso3')
         
         total_dia = rescates_por_dia.count() + rescates_por_dia_CHIS.count()
