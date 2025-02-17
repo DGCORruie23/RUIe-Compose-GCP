@@ -31,7 +31,7 @@
         <form id="form-fecha">
             {% csrf_token %}
             <input type="date" name="fecha" id="id_fecha">
-            <button type="submit">Buscar</button>
+            <button class="bg-inm-verde-200 px-1 rounded-l text-white hover:bg-inm-rojo-200" type="submit">Buscar</button>
         </form>
     </div>
 
@@ -55,9 +55,15 @@
             </button>
         </div>
 
+        <div class="flex justify-center items-center bg-white p-4 rounded-lg shadow">
+            <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" onclick="generarExcelNuevos()">
+                Descargar <br> Listado Nuevos
+            </button>
+        </div>
+
     </div>
 
-    <div>
+    <div class="my-2">
         <div class="bg-white p-4 rounded-lg shadow mb-8">
             <h1 class="text-xl text-center font-semibold">Reincidencia por fechas</h1>
             <h2 class="text-xxl font-semibold">Seleccione Intervalo de tiempo de busqueda:</h2>
@@ -97,7 +103,7 @@
             </div>
 
             <div class="flex justify-center items-center bg-white p-4 rounded-lg shadow">
-                <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" onclick="generarExcelNuevos()">
+                <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" onclick="generarExcelNuevos1()">
                     Descargar <br> Listado Nuevos
                 </button>
             </div>
@@ -112,6 +118,7 @@
     let infoExcel = null;
     let infoExcel1 = null;
     let infoExcelN = null;
+    let infoExcelN1 = null;
     let fechaArchivo = "2024-01-01";
 
     $(document).ready(function() {
@@ -142,9 +149,21 @@
 
                     if (response.data.length > 0) {
                         infoExcel = response.data[0].resultados;
+
+                        resultados.append('Reincidentes: ');
                         resultados.append((response.data[0].conteo).toLocaleString());
+                        resultados.append('<br>');
+                        resultados.append('Registros: ');
+                        resultados.append((response.data[0].total_r).toLocaleString());
+                        let totalR = response.data[0].total_r - response.data[0].conteo;
+                        resultados.append('<br>');
+                        resultados.append('Rescate Real: ');
+                        resultados.append(totalR.toLocaleString());
+
+
                         fechaC.append(response.data[0].fecha);
                         fechaArchivo = response.data[0].fecha;
+                        infoExcelN = response.data[0].rescatesNuevos;
                         // Diccionario pasado desde Django
                     } else {
                         resultados.append('<h1>No se encontraron resultados</h1>');
@@ -191,15 +210,15 @@
                         resultados.append((response.data[0].conteo).toLocaleString());
                         resultados.append('<br>');
                         resultados.append('Registros: ');
-                        resultados.append((response.data[0].total_r).toLocaleString());
-                        let totalR = response.data[0].total_r - response.data[0].conteo;
+                        resultados.append((response.data[0].total_r1).toLocaleString());
+                        let totalR1 = response.data[0].total_r1 - response.data[0].conteo;
                         resultados.append('<br>');
                         resultados.append('Rescate Real: ');
-                        resultados.append(totalR.toLocaleString());
+                        resultados.append(totalR1.toLocaleString());
 
                         fechaC.append(response.data[0].fecha);
                         fechaArchivo1 = response.data[0].fecha;
-                        infoExcelN = response.data[0].rescatesNuevos;
+                        infoExcelN1 = response.data[0].rescatesNuevos1;
                         // Diccionario pasado desde Django
                     } else {
                         resultados.append('<h1>No se encontraron resultados</h1>');
@@ -243,6 +262,19 @@
 
     function generarExcelNuevos() {
         const diccionario = infoExcelN;
+
+        const workbook = XLSX.utils.book_new();
+        const worksheet = XLSX.utils.json_to_sheet(diccionario);
+
+        // Añadir la hoja al libro
+        XLSX.utils.book_append_sheet(workbook, worksheet, "Datos");
+
+        // Descargar el archivo Excel
+        XLSX.writeFile(workbook, "Rescates_Nuevos_" + fechaArchivo + ".xlsx");
+    }
+
+    function generarExcelNuevos1() {
+        const diccionario = infoExcelN1;
 
         const workbook = XLSX.utils.book_new();
         const worksheet = XLSX.utils.json_to_sheet(diccionario);

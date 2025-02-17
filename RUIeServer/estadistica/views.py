@@ -56,15 +56,17 @@ def reincidentes_xdia_ajax(request):
 
         # Rescates por dia de las OR sin chiapas y tabasco
         rescates_por_dia = RescatePunto.objects.filter(fecha__in= array_fechasDia).exclude(oficinaRepre__in=["CHIAPAS"]) \
-            .values('nombre', 'apellidos', 'iso3', 'puntoEstra', 'oficinaRepre') \
+            .values('nombre', 'apellidos', 'iso3', 'puntoEstra', 'oficinaRepre', 'sexo', 'fechaNacimiento') \
             .order_by('iso3')
 
         datosORs = list(rescates_por_dia)
 
         # Rescates por dia de la OR CHIS
         rescates_por_dia_CHIS = RescatePunto.objects.filter(fecha__in=array_fechasDia, oficinaRepre="CHIAPAS") \
-            .values('nombre', 'apellidos', 'iso3', 'puntoEstra', 'oficinaRepre') \
+            .values('nombre', 'apellidos', 'iso3', 'puntoEstra', 'oficinaRepre', 'sexo', 'fechaNacimiento') \
             .order_by('iso3')
+        
+        total_dia = rescates_por_dia.count() + rescates_por_dia_CHIS.count()
 
         datosCHIS = list(rescates_por_dia_CHIS)
 
@@ -84,12 +86,15 @@ def reincidentes_xdia_ajax(request):
 
         # Comparar cada entrada de datos1 con valores_unicos y obtener el valor de veces si existe
         resultados = []
+        rescatesNuevos = []
         for dato in datosORs:
             clave = (dato['nombre'], dato['apellidos'], dato['iso3'])
             veces = valores_duplicados1year.get(clave)  # Buscar en el diccionario
             if veces is not None:
                 # print(veces)
                 resultados.append({**dato, 'veces': veces})
+            else:
+                rescatesNuevos.append({**dato, 'veces': 0})
             # else:
             #     resultados.append({**dato, 'veces': 1})  # Si no existe, agregar 'veces': 0 o lo que prefieras
 
@@ -113,7 +118,9 @@ def reincidentes_xdia_ajax(request):
             {
                 'fecha': fecha,
                 'resultados': resultados,
+                'total_r': total_dia,
                 'conteo': conteo,
+                'rescatesNuevos': rescatesNuevos,
             }
         ]
         return JsonResponse({'data': data}, safe=False)
@@ -138,14 +145,14 @@ def reincidentes_xfechas_ajax(request):
 
         # Rescates por dia de las OR sin chiapas y tabasco
         rescates_por_dia = RescatePunto.objects.filter(fecha__in= array_fechasDia).exclude(oficinaRepre__in=["CHIAPAS"]) \
-            .values('nombre', 'apellidos', 'iso3', 'puntoEstra', 'oficinaRepre') \
+            .values('nombre', 'apellidos', 'iso3', 'puntoEstra', 'oficinaRepre', 'sexo', 'fechaNacimiento') \
             .order_by('iso3')
 
         datosORs = list(rescates_por_dia)
 
         # Rescates por dia de la OR CHIS
         rescates_por_dia_CHIS = RescatePunto.objects.filter(fecha__in=array_fechasDia, oficinaRepre="CHIAPAS") \
-            .values('nombre', 'apellidos', 'iso3', 'puntoEstra', 'oficinaRepre') \
+            .values('nombre', 'apellidos', 'iso3', 'puntoEstra', 'oficinaRepre', 'sexo', 'fechaNacimiento') \
             .order_by('iso3')
         
         total_dia = rescates_por_dia.count() + rescates_por_dia_CHIS.count()
@@ -201,8 +208,8 @@ def reincidentes_xfechas_ajax(request):
                 'fecha': fechas,
                 'resultados': resultados,
                 'conteo': conteo,
-                'total_r': total_dia,
-                'rescatesNuevos': rescatesNuevos,
+                'total_r1': total_dia,
+                'rescatesNuevos1': rescatesNuevos,
             }
         ]
         return JsonResponse({'data': data}, safe=False)
