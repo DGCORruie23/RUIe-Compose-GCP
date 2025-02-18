@@ -5,9 +5,6 @@
 {% block styles %}
     <style>
 
-
-
-
         table {
             border-collapse: collapse;
             width: 100%;
@@ -43,13 +40,26 @@
         #myInput {
             background-position: 10px 10px;
             background-repeat: no-repeat;
-            width: 45%;
+            width: 220px;
             font-size: 16px;
-            padding: 12px 10px 12px 40px;
+            padding: 8px 1px 8px 8px;
             border: 1px solid #ddd;
             margin-left: 12%;
             border-radius: 10px;
             margin-bottom: 20px;
+          }
+
+          #myInput2 {
+            background-position: 10px 10px;
+            background-repeat: no-repeat;
+            width: 180px;
+            font-size: 16px;
+            padding: 8px 1px 8px 8px;
+            border: 1px solid #ddd;
+            margin-left: 12%;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            margin-right: 20px;
           }
           
           .flex-container {
@@ -129,9 +139,11 @@
     </div> -->
 
     <div class="contIcons flex items-center ">
-        <div class="ml-8 basis-1/2 py-5 "><input type="text" id="myInput" onkeyup="myFunction()" placeholder="Buscar por nombre completo..."></div>
-        <div style="margin-right: 5%;"  class=" ml-8 basis-1/8 py-5 px-5 mx-1 bg-inm-rojo-300 hover:bg-inm-marron-100 rounded-xl text-white "><a href="#popup" class="">Carga masiva</a></div> 
-        <div style="margin-right: 15%;" class=" ml-8 basis-1/8 py-5 px-5 mx-1 bg-inm-rojo-300 hover:bg-inm-marron-100 rounded-xl text-white  "><a href="{% url 'agregar_usuario' %}" >
+        <br>
+        <div class="ml-8 basis-1/8 py-5 px-5 mx-1"><input type="text" id="myInput" onkeyup="myFunction()" placeholder="Buscar por nombre completo"></div>
+        <div class="ml-8 basis-1/8 py-5 px-5 mx-1"><input type="text" id="myInput2" onkeyup="myFunction2()" placeholder="Buscar por OR"></div>
+        <div style="margin-right: 5%;"  class="ml-8 basis-1/8 py-5 px-5 mx-1 bg-inm-rojo-300 hover:bg-inm-marron-100 rounded-xl text-white "><a href="#popup" class="">Carga masiva</a></div> 
+        <div style="margin-right: 15%;" class="ml-8 basis-1/8 py-5 px-5 mx-1 bg-inm-rojo-300 hover:bg-inm-marron-100 rounded-xl text-white  "><a href="{% url 'agregar_usuario' %}" >
             Agregar Usuario
         </a></div> 
         <div style="margin-right: 15%;">
@@ -255,6 +267,25 @@
             tr = table.getElementsByTagName("tr");
             for (i = 0; i < tr.length; i++) {
               td = tr[i].getElementsByTagName("td")[3];
+              if (td) {
+                txtValue = td.textContent || td.innerText;
+                if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                  tr[i].style.display = "";
+                } else {
+                  tr[i].style.display = "none";
+                }
+              }       
+            }
+          }
+
+          function myFunction2() {
+            var input, filter, table, tr, td, i, txtValue;
+            input = document.getElementById("myInput2");
+            filter = input.value.toUpperCase();
+            table = document.getElementById("myTable");
+            tr = table.getElementsByTagName("tr");
+            for (i = 0; i < tr.length; i++) {
+              td = tr[i].getElementsByTagName("td")[1];
               if (td) {
                 txtValue = td.textContent || td.innerText;
                 if (txtValue.toUpperCase().indexOf(filter) > -1) {

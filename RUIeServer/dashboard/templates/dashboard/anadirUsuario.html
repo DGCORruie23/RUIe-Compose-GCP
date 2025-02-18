@@ -107,7 +107,7 @@
                     <option value='4' {% if form.estado == '4' %}selected{% endif %}>CAMPECHE</option>
                     <option value='9' {% if form.estado == '9' %}selected{% endif %}>CDMX</option>
                     <option value='7' {% if form.estado == '7' %}selected{% endif %}>CHIAPAS</option>
-                    <option value='8' {% if form.estado == '8' %}selected{% endif %}>CHIHUAHA</option>
+                    <option value='8' {% if form.estado == '8' %}selected{% endif %}>CHIHUAHUA</option>
                     <option value='5' {% if form.estado == '5' %}selected{% endif %}>COAHUILA</option>
                     <option value='6' {% if form.estado == '6' %}selected{% endif %}>COLIMA</option>
                     <option value='10' {% if form.estado == '10' %}selected{% endif %}>DURANGO</option>
@@ -147,7 +147,17 @@
                 <input type="text" id="id_nickname" name="nickname" value="{{ form.nickname }}" class="elegant-input"><br>
     
                 <label for="lname" class="elegant-input-label">Contraseña:</label><br>
-                <input name="password" value="{{ form.password }}" class="elegant-input" id="id_password"><br>    
+                <input name="password" value="{{ form.password }}" class="elegant-input" id="id_password"><br>   
+
+                <label for="fname" class="elegant-input-label">Tipo de Dispositivo:</label><br>
+                <select type="text" name="tipo_disp" value="{{ form.tipo_disp }}" class="elegant-input" id="id_tipo_disp">
+                    <option value='1' {% if form.tipo_disp == '1' %}selected{% endif %}>Android</option>
+                    <option value='2' {% if form.tipo_disp == '2' %}selected{% endif %}>IPhone</option>
+                    <option value='3' {% if form.tipo_disp == '3' %}selected{% endif %}>Otro</option>
+                </select><br>
+
+                <label for="lname" class="elegant-input-label">Contraseña texto:</label><br>
+                <input type="text" id="id_str_pass" name="str_pass" value="{{ form.str_pass }}" class="elegant-input"><br>
             <br>
             <input type="submit" value="Guardar" class="py-2 px-6 bg-inm-verde-200 rounded-xl text-white hover:bg-inm-marron-100">
         </form>

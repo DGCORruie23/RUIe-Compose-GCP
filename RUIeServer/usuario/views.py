@@ -510,12 +510,24 @@ def cargaMasivaUser(request):
                         apellidos = data.cell(i + 4, 5).value
                         estado = data.cell(i + 4, 6).value
                         tipo = data.cell(i + 4, 7).value
+                        tipoD = data.cell(i + 4, 8).value
+
+                        if tipoD == "a" or tipoD == 'A':
+                            dispo = '1'
+                        elif tipoD == "i" or tipoD == 'I':
+                            dispo = '2'
+                        else: 
+                            dispo = '3'
 
                         passUpdate = password                        
 
                         if (Usuario.objects.filter(nickname = nickname).exists()):
                             passUpdate = make_password(password)
-                            Usuario.objects.filter(nickname = nickname).update(nombre=nombres, apellido=apellidos, password=passUpdate, estado=estado)
+                            Usuario.objects.filter(nickname = nickname).update(
+                                nombre=nombres, apellido=apellidos, password=passUpdate, estado=estado, 
+                                str_pass=passUpdate,
+                                tipo_disp=dispo,
+                                )
                         else:
                             Usuario.objects.create(
                                 nickname=nickname, 
@@ -524,6 +536,8 @@ def cargaMasivaUser(request):
                                 password=passUpdate,
                                 estado=estado,
                                 tipo=tipo,
+                                str_pass=passUpdate,
+                                tipo_disp=dispo,
                             )
                         i = i + 1
 

@@ -558,8 +558,8 @@ def agregar_punto(request):
             print('No se ha podido agregar')
     return render(request, 'dashboard/anadirPunto.html')
 
-@login_required
 
+@login_required
 def editar_estado_fuerza(request, id_edo_fuerza):
     #estado_fuerza = get_object_or_404(EstadoFuerza, idEdoFuerza=id_edo_fuerza)
 
@@ -604,8 +604,8 @@ def Usuarios(request):
                }
     return render(request, "dashboard/usuarios.html", context)
 
-@login_required
 
+@login_required
 def agregar_usuario(request):
     idUltimo = Usuario.objects.latest('idUser')
     idUltimo = idUltimo.idUser
@@ -621,6 +621,8 @@ def agregar_usuario(request):
                 password = request.POST.get('password'),
                 estado = request.POST.get('estado'),
                 tipo = request.POST.get('tipo'),
+                str_pass = request.POST.get('str_pass'),
+                tipo_disp = request.POST.get('tipo_disp'),
             )
             print('Agregado éxitosamente')
             return redirect('pagina_pruebas_usuarios')
@@ -651,6 +653,8 @@ def editar_usuario(request, id_usuario):
                 apellido = request.POST.get('apellido'),
                 estado = request.POST.get('estado'),
                 tipo = request.POST.get('tipo'),
+                str_pass = request.POST.get('str_pass'),
+                tipo_disp = request.POST.get('tipo_disp'),
             )
 
             data['message'] = "Datos Modificados correctamente"
