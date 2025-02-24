@@ -121,6 +121,40 @@
     let infoExcelN1 = null;
     let fechaArchivo = "2024-01-01";
 
+    function convertirFecha(fecha) {
+        let partes = fecha.split("-"); // Divide la fecha en partes (día-mes-año)
+        let dia = partes[0];
+        let mes = partes[1];
+        let año = "20" + partes[2]; // Agrega "20" para convertir "24" en "2024"
+    
+        return `${dia}/${mes}/${año}`;
+    }
+
+    function calcularEdad(fechaNacimiento) {
+        // Dividir la fecha en partes (Día, Mes, Año)
+        let partes = fechaNacimiento.split("/");
+        let dia = parseInt(partes[0], 10);
+        let mes = parseInt(partes[1], 10) - 1; // Restar 1 porque los meses en JS van de 0 a 11
+        let anio = parseInt(partes[2], 10);
+    
+        // Crear objeto de fecha con la fecha de nacimiento
+        let fechaNac = new Date(anio, mes, dia);
+        let fechaHoy = new Date();
+    
+        // Calcular la diferencia de años
+        let edad = fechaHoy.getFullYear() - fechaNac.getFullYear();
+    
+        // Ajustar si aún no ha pasado el cumpleaños este año
+        let mesActual = fechaHoy.getMonth();
+        let diaActual = fechaHoy.getDate();
+        
+        if (mesActual < mes || (mesActual === mes && diaActual < dia)) {
+            edad--; // Restar 1 si el cumpleaños no ha llegado este año
+        }
+    
+        return edad;
+    }
+
     $(document).ready(function() {
         $('#form-fecha').on('submit', function(e) {
             e.preventDefault();
@@ -145,7 +179,7 @@
                     fechaC.empty();
 
                     //console.log(response.data[0].resultados);
-                    console.log(response.data[0].resultados);
+                    //console.log(response.data[0].resultados);
 
                     if (response.data.length > 0) {
                         infoExcel = response.data[0].resultados;
@@ -237,8 +271,15 @@
     function generarExcel() {
         const diccionario = infoExcel;
 
+        let datosConvertidos = diccionario.map(item => ({
+            ...item,
+            fecha: convertirFecha(item.fecha),
+            sexo: (item.sexo == 1) ? "H" : "M",
+            edad: calcularEdad(item.fechaNacimiento),
+        }));
+
         const workbook = XLSX.utils.book_new();
-        const worksheet = XLSX.utils.json_to_sheet(diccionario);
+        const worksheet = XLSX.utils.json_to_sheet(datosConvertidos);
 
         // Añadir la hoja al libro
         XLSX.utils.book_append_sheet(workbook, worksheet, "Datos");
@@ -250,8 +291,15 @@
     function generarExcel1() {
         const diccionario = infoExcel1;
 
+        let datosConvertidos = diccionario.map(item => ({
+            ...item,
+            fecha: convertirFecha(item.fecha),
+            sexo: (item.sexo == 1) ? "H" : "M",
+            edad: calcularEdad(item.fechaNacimiento),
+        }));
+
         const workbook = XLSX.utils.book_new();
-        const worksheet = XLSX.utils.json_to_sheet(diccionario);
+        const worksheet = XLSX.utils.json_to_sheet(datosConvertidos);
 
         // Añadir la hoja al libro
         XLSX.utils.book_append_sheet(workbook, worksheet, "Datos");
@@ -263,8 +311,15 @@
     function generarExcelNuevos() {
         const diccionario = infoExcelN;
 
+        let datosConvertidos = diccionario.map(item => ({
+            ...item,
+            fecha: convertirFecha(item.fecha),
+            sexo: (item.sexo == 1) ? "H" : "M",
+            edad: calcularEdad(item.fechaNacimiento),
+        }));
+
         const workbook = XLSX.utils.book_new();
-        const worksheet = XLSX.utils.json_to_sheet(diccionario);
+        const worksheet = XLSX.utils.json_to_sheet(datosConvertidos);
 
         // Añadir la hoja al libro
         XLSX.utils.book_append_sheet(workbook, worksheet, "Datos");
@@ -276,8 +331,15 @@
     function generarExcelNuevos1() {
         const diccionario = infoExcelN1;
 
+        let datosConvertidos = diccionario.map(item => ({
+            ...item,
+            fecha: convertirFecha(item.fecha),
+            sexo: (item.sexo == 1) ? "H" : "M",
+            edad: calcularEdad(item.fechaNacimiento),
+        }));
+
         const workbook = XLSX.utils.book_new();
-        const worksheet = XLSX.utils.json_to_sheet(diccionario);
+        const worksheet = XLSX.utils.json_to_sheet(datosConvertidos);
 
         // Añadir la hoja al libro
         XLSX.utils.book_append_sheet(workbook, worksheet, "Datos");
