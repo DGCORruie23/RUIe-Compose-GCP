@@ -104,6 +104,14 @@
                 <td>No hay datos disponibles.</td>
                 {% endfor %}
             </tr>
+            <tr>
+                <td class="letraT2"><strong>Carreteros</strong></td>
+                {% for oficina, dato in rescates_c %}
+                <td class="letraT2">{{ dato }}</td>
+                {% empty %}
+                <td>No hay datos disponibles.</td>
+                {% endfor %}
+            </tr>
         </tbody>
         </table>
     </div>
