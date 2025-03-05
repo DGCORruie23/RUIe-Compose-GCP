@@ -3,10 +3,10 @@ from django.contrib import admin
 from .models import Usuario, Paises, EstadoFuerza, Frases, Municipios, PuntosInternacion, RescatePunto, ConteoRapidoPunto, MsgUpdate, DisuadidosPunto
 
 class RescateAdmin(admin.ModelAdmin):
-    list_display = ['idRescate', 'oficinaRepre', 'puntoEstra']
-    list_editable = ['puntoEstra']
-    list_filter = ['oficinaRepre', 'puntoEstra']
-    search_fields = ['oficinaRepre', 'puntoEstra']
+    list_display = ['idRescate', 'oficinaRepre', 'puntoEstra', 'fecha', 'hora', 'nacionalidad']
+    list_editable = ['oficinaRepre','fecha', 'puntoEstra']
+    list_filter = ['oficinaRepre', 'fecha', 'puntoEstra', 'nacionalidad']
+    search_fields = ['oficinaRepre', 'puntoEstra', 'fecha', 'nacionalidad']
 
 class EstadoAdmin(admin.ModelAdmin):
     list_display = ['idEdoFuerza', 'oficinaR', 'nomPuntoRevision', 'tipoP']
