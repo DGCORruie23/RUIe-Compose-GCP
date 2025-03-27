@@ -12,4 +12,5 @@ urlpatterns = [
      path('reincidentes_fechas/', views.reincidentes_xfechas_ajax, name='reincidenciaFechas'),
 
      path("pdf/", views.generar_pdf, name="generar_pdf"),
+     path("pdf_ceco/", views.generar_pdf_ceco, name="generar_pdf_ceco"),
 ]

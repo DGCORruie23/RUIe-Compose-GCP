@@ -540,3 +540,179 @@ def generar_pdf(request):
     response = HttpResponse(pdf_file, content_type="application/pdf")
     response["Content-Disposition"] = 'inline; filename="reporte.pdf"'
     return response
+
+
+@login_required
+def generar_pdf_ceco(request):
+
+    fecha1 = request.GET.get('fechaI', '')
+
+    fechaB = datetime.strptime(f"{fecha1}", "%Y-%m-%d")
+
+    # oficinas = EstadoFuerza.objects.values_list("oficinaR", flat=True).distinct().order_by('oficinaR')
+
+    fechaIN = fechaB.strftime("%d-%m-%y")
+
+    types_ORS = [
+        "CAMPECHE",
+        "CHIAPAS",
+        "HIDALGO",
+        "EDOMEX",
+        "OAXACA",
+        "PUEBLA",
+        "QUINTANA ROO",
+        "TABASCO",
+        "TLAXCALA",
+        "VERACRUZ",
+        "YUCATÁN",
+    ]
+
+    rescates_or_punto = RescatePunto.objects.filter(fecha=fechaIN)\
+        .values("oficinaRepre", 'puntoEstra')\
+        .annotate(
+            total=Count('idRescate'))\
+        .order_by("oficinaRepre", 'puntoEstra')
+    
+
+    conteo_oficina = { nombre: {} for nombre in types_ORS }
+
+    for dato in rescates_or_punto:
+        puntoE = dato["puntoEstra"]
+        if puntoE == '':
+            puntoE = 'Voluntarios'
+        try:
+            conteo_oficina[dato["oficinaRepre"]][puntoE] = dato["total"]
+        except:
+            pass
+
+
+    rescates_or_nacionalidad = RescatePunto.objects.filter(fecha=fechaIN)\
+        .values("oficinaRepre", 'nacionalidad', 'sexo', 'edad', 'numFamilia')\
+        .order_by("oficinaRepre", 'nacionalidad')
+    
+    conteo_nacionalidad = { nombre: {} for nombre in types_ORS }
+
+    for d in rescates_or_nacionalidad:
+        # print(d)
+        oficinaR=d["oficinaRepre"]
+        nacionalidad = d["nacionalidad"]
+
+        # print(d)
+
+        try:
+            if nacionalidad not in list(conteo_nacionalidad[oficinaR].keys()):
+                conteo_nacionalidad[oficinaR][nacionalidad] = {"H_AS": 0, "M_AS": 0, "H_mS": 0, "M_mS": 0, "H_AA": 0, "M_AA": 0, "H_mA": 0, "M_mA": 0, 'total':0 }
+            
+            conteo_nacionalidad[oficinaR][nacionalidad]["total"] +=1
+
+            # print(d)
+
+            if d['sexo'] == True and d['edad'] >= 18 and (d['numFamilia'] is None or d['numFamilia'] == 0):
+                conteo_nacionalidad[oficinaR][nacionalidad]["H_AS"] += 1
+            elif d['sexo'] == False and d['edad'] >= 18 and (d['numFamilia'] is None or d['numFamilia'] == 0):
+                conteo_nacionalidad[oficinaR][nacionalidad]["M_AS"] += 1
+            elif d['sexo'] == True and d['edad'] < 18 and (d['numFamilia'] is None or d['numFamilia'] == 0):
+                conteo_nacionalidad[oficinaR][nacionalidad]["H_mS"] += 1
+            elif d['sexo'] == False and d['edad'] < 18 and (d['numFamilia'] is None or d['numFamilia'] == 0):
+                conteo_nacionalidad[oficinaR][nacionalidad]["M_mS"] += 1
+            elif d['sexo'] == True and d['edad'] >= 18 and (d['numFamilia'] > 0):
+                conteo_nacionalidad[oficinaR][nacionalidad]["H_AA"] += 1
+            elif d['sexo'] == False and d['edad'] >= 18 and (d['numFamilia'] > 0):
+                conteo_nacionalidad[oficinaR][nacionalidad]["M_AA"] += 1
+            elif d['sexo'] == True and d['edad'] < 18 and (d['numFamilia'] > 0):
+                conteo_nacionalidad[oficinaR][nacionalidad]["H_mA"] += 1
+            elif d['sexo'] == False and d['edad'] < 18 and (d['numFamilia'] > 0):
+                conteo_nacionalidad[oficinaR][nacionalidad]["M_mA"] += 1
+            else:
+                print(d)
+        except:
+            pass
+    
+    # print(conteo_nacionalidad)
+
+    context = {
+        "fecha_actual": fecha1,
+        "rescOR_punto": conteo_oficina,
+        "rescOR_nac": conteo_nacionalidad,
+    }
+
+    # Renderizar el template HTML con los datos
+    template = get_template("estadistica/reporteCECO.html")
+    html_string = template.render(context)
+
+    # Crear el PDF con WeasyPrint
+    pdf_file = HTML(string=html_string).write_pdf()
+
+    # Devolver el PDF como respuesta HTTP
+    response = HttpResponse(pdf_file, content_type="application/pdf")
+    response["Content-Disposition"] = 'inline; filename="reporte.pdf"'
+    return response
+
+
+# @login_required
+# def generar_cuadro_diario(request):
+
+#     fecha1 = request.GET.get('fechaI', '')
+
+#     fechaB = datetime.strptime(f"{fecha1}", "%Y-%m-%d")
+
+#     # oficinas = EstadoFuerza.objects.values_list("oficinaR", flat=True).distinct().order_by('oficinaR')
+
+#     fechaIN = fechaB.strftime("%d-%m-%y")
+
+#     array_fechasDia = [(fechaIN + timedelta(days=d)).strftime("%d-%m-%y") for d in range((fechaIN - fechaIN).days + 1)]
+
+#     # Rescates por dia de las OR sin chiapas y tabasco
+#     rescates_por_dia = RescatePunto.objects.filter(fecha__in= array_fechasDia).exclude(oficinaRepre__in=["CHIAPAS"]) \
+#         .values('nombre', 'apellidos', 'iso3', 'puntoEstra', 'oficinaRepre', 'fecha', 'sexo', 'fechaNacimiento') \
+#         .order_by('iso3')
+
+#     datosORs = list(rescates_por_dia)
+
+#     # Rescates por dia de la OR CHIS
+#     rescates_por_dia_CHIS = RescatePunto.objects.filter(fecha__in=array_fechasDia, oficinaRepre="CHIAPAS") \
+#         .values('nombre', 'apellidos', 'iso3', 'puntoEstra', 'oficinaRepre', 'fecha', 'sexo', 'fechaNacimiento') \
+#         .order_by('iso3')
+    
+#     total_dia = rescates_por_dia.count() + rescates_por_dia_CHIS.count()
+
+#     datosCHIS = list(rescates_por_dia_CHIS)
+
+#     # Valores duplicados desde un año atras
+#     valores_duplicados = RescatePunto.objects.all() \
+#         .exclude(aeropuerto=False, carretero=False, casaSeguridad=False, centralAutobus=False, ferrocarril=False, hotel=False, puestosADispo=False, voluntarios=False, otro=False) \
+#         .values('nombre', 'apellidos', 'iso3') \
+#         .annotate(veces=Count('idRescate')) \
+#         .filter(veces__gt=1) \
+#         .order_by('-veces')
+    
+#     print(valores_duplicados.count())
+
+#     valores_duplicados1year = {
+#         (valor['nombre'], valor['apellidos'], valor['iso3']): valor['veces']
+#         for valor in valores_duplicados
+#     }
+
+
+#     resultados = []
+#     rescatesNuevos = []
+#     for dato in datosORs:
+#         clave = (dato['nombre'], dato['apellidos'], dato['iso3'])
+#         veces = valores_duplicados1year.get(clave)  # Buscar en el diccionario
+#         if veces is not None:
+#             # print(veces)
+#             resultados.append({**dato, 'veces': veces})
+#         else:
+#             rescatesNuevos.append({**dato, 'veces': 0})
+
+#     for dato in datosCHIS:
+#         clave = (dato['nombre'], dato['apellidos'], dato['iso3'])
+#         veces = valores_duplicados1year.get(clave)  # Buscar en el diccionario
+#         if veces is not None:
+#             # print(veces)
+#             resultados.append({**dato, 'veces': veces + 1})
+#         else:
+#             resultados.append({**dato, 'veces': 1})  # Si no existe, agregar 'veces': 0 o lo que prefieras
+
+#     conteo = len(resultados)
+#     pass
