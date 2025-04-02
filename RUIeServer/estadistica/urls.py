@@ -13,4 +13,5 @@ urlpatterns = [
 
      path("pdf/", views.generar_pdf, name="generar_pdf"),
      path("pdf_ceco/", views.generar_pdf_ceco, name="generar_pdf_ceco"),
+     path("cuadro_datos/", views.generar_cuadro_diario, name="generar_cuadro_diario"),
 ]

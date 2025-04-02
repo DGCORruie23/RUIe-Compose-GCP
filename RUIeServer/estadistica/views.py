@@ -16,7 +16,38 @@ from weasyprint import HTML
 from datetime import *
 import os
 
-
+ors_str = [
+    "AGUASCALIENTES",
+    "BAJA CALIFORNIA",
+    "BAJA CALIFORNIA SUR",
+    "CAMPECHE",
+    "COAHUILA",
+    "COLIMA",
+    "CHIHUAHUA",
+    "CDMX",
+    "DURANGO",
+    "GUANAJUATO",
+    "GUERRERO",
+    "HIDALGO",
+    "JALISCO",
+    "EDOMEX",
+    "MICHOACÁN",
+    "MORELOS",
+    "NAYARIT",
+    "NUEVO LEÓN",
+    "OAXACA",
+    "PUEBLA",
+    "QUERÉTARO",
+    "QUINTANA ROO",
+    "SAN LUIS POTOSÍ",
+    "SINALOA",
+    "SONORA",
+    "TABASCO",
+    "TAMAULIPAS",
+    "TLAXCALA",
+    "VERACRUZ",
+    "YUCATÁN",
+        ]
 # Create your views here.
 @login_required
 def estadistica(request):
@@ -29,7 +60,10 @@ def estadistica(request):
 @login_required
 def busqueda(request):
     if request.method == 'GET':
-        return render(request, "estadistica/buscar.html")
+        contex = {
+            'hoy': date.today().isoformat(),
+        }
+        return render(request, "estadistica/buscar.html", contex)
     
 @login_required
 def reincidencia(request):
@@ -51,7 +85,7 @@ def reincidentes_xdia_ajax(request):
 
         # fecha_year_less = fechaIN - timedelta(days=365)
 
-        array_fechasAnual = [(fechaIN + timedelta(days=d)).strftime("%d-%m-%y") for d in range((365 + 1))]
+        # array_fechasAnual = [(fechaIN + timedelta(days=d)).strftime("%d-%m-%y") for d in range((365 + 1))]
 
         array_fechasDia = [(fechaIN + timedelta(days=d)).strftime("%d-%m-%y") for d in range((fechaIN - fechaIN).days + 1)]
 
@@ -149,15 +183,15 @@ def reincidentes_xfechas_ajax(request):
 
         # Rescates por dia de las OR sin chiapas y tabasco
         rescates_por_dia = RescatePunto.objects.filter(fecha__in= array_fechasDia).exclude(oficinaRepre__in=["CHIAPAS"]) \
-            .values('nombre', 'apellidos', 'iso3', 'puntoEstra', 'oficinaRepre', 'fecha', 'sexo', 'fechaNacimiento', 'numFamilia') \
-            .order_by('iso3')
+            .values('nombre', 'apellidos', 'nacionalidad', 'puntoEstra', 'oficinaRepre', 'fecha', 'sexo', 'fechaNacimiento', 'numFamilia') \
+            .order_by('nacionalidad')
 
         datosORs = list(rescates_por_dia)
 
         # Rescates por dia de la OR CHIS
         rescates_por_dia_CHIS = RescatePunto.objects.filter(fecha__in=array_fechasDia, oficinaRepre="CHIAPAS") \
-            .values('nombre', 'apellidos', 'iso3', 'puntoEstra', 'oficinaRepre', 'fecha', 'sexo', 'fechaNacimiento', 'numFamilia') \
-            .order_by('iso3')
+            .values('nombre', 'apellidos', 'nacionalidad', 'puntoEstra', 'oficinaRepre', 'fecha', 'sexo', 'fechaNacimiento', 'numFamilia') \
+            .order_by('nacionalidad')
         
         total_dia = rescates_por_dia.count() + rescates_por_dia_CHIS.count()
 
@@ -165,15 +199,15 @@ def reincidentes_xfechas_ajax(request):
 
     # Valores duplicados desde un año atras
         valores_duplicados = RescatePunto.objects.all() \
-            .values('nombre', 'apellidos', 'iso3') \
+            .values('nombre', 'apellidos', 'nacionalidad') \
             .annotate(veces=Count('idRescate')) \
             .filter(veces__gt=1) \
             .order_by('-veces')
         
-        print(valores_duplicados.count())
+        # print(valores_duplicados.count())
 
         valores_duplicados1year = {
-            (valor['nombre'], valor['apellidos'], valor['iso3']): valor['veces']
+            (valor['nombre'], valor['apellidos'], valor['nacionalidad']): valor['veces']
             for valor in valores_duplicados
         }
 
@@ -181,7 +215,7 @@ def reincidentes_xfechas_ajax(request):
         resultados = []
         rescatesNuevos = []
         for dato in datosORs:
-            clave = (dato['nombre'], dato['apellidos'], dato['iso3'])
+            clave = (dato['nombre'], dato['apellidos'], dato['nacionalidad'])
             veces = valores_duplicados1year.get(clave)  # Buscar en el diccionario
             if veces is not None:
                 # print(veces)
@@ -193,7 +227,7 @@ def reincidentes_xfechas_ajax(request):
 
         # Comparar cada entrada de datos1 con valores_unicos y obtener el valor de veces si existe
         for dato in datosCHIS:
-            clave = (dato['nombre'], dato['apellidos'], dato['iso3'])
+            clave = (dato['nombre'], dato['apellidos'], dato['nacionalidad'])
             veces = valores_duplicados1year.get(clave)  # Buscar en el diccionario
             if veces is not None:
                 # print(veces)
@@ -538,7 +572,7 @@ def generar_pdf(request):
 
     # Devolver el PDF como respuesta HTTP
     response = HttpResponse(pdf_file, content_type="application/pdf")
-    response["Content-Disposition"] = 'inline; filename="reporte.pdf"'
+    response["Content-Disposition"] = 'inline; filename="reporte_Diario.pdf"'
     return response
 
 
@@ -645,74 +679,175 @@ def generar_pdf_ceco(request):
 
     # Devolver el PDF como respuesta HTTP
     response = HttpResponse(pdf_file, content_type="application/pdf")
-    response["Content-Disposition"] = 'inline; filename="reporte.pdf"'
+    response["Content-Disposition"] = 'inline; filename="reporteCECO.pdf"'
     return response
 
 
-# @login_required
-# def generar_cuadro_diario(request):
+@login_required
+def generar_cuadro_diario(request):
 
-#     fecha1 = request.GET.get('fechaI', '')
+    fecha1 = request.GET.get('fechaI', '')
 
-#     fechaB = datetime.strptime(f"{fecha1}", "%Y-%m-%d")
+    fechaB = datetime.strptime(f"{fecha1}", "%Y-%m-%d")
 
-#     # oficinas = EstadoFuerza.objects.values_list("oficinaR", flat=True).distinct().order_by('oficinaR')
+    # oficinas = EstadoFuerza.objects.values_list("oficinaR", flat=True).distinct().order_by('oficinaR')
 
-#     fechaIN = fechaB.strftime("%d-%m-%y")
+    fechaIN = fechaB
 
-#     array_fechasDia = [(fechaIN + timedelta(days=d)).strftime("%d-%m-%y") for d in range((fechaIN - fechaIN).days + 1)]
+    array_fechasDia = [(fechaIN + timedelta(days=d)).strftime("%d-%m-%y") for d in range((fechaIN - fechaIN).days + 1)]
 
-#     # Rescates por dia de las OR sin chiapas y tabasco
-#     rescates_por_dia = RescatePunto.objects.filter(fecha__in= array_fechasDia).exclude(oficinaRepre__in=["CHIAPAS"]) \
-#         .values('nombre', 'apellidos', 'iso3', 'puntoEstra', 'oficinaRepre', 'fecha', 'sexo', 'fechaNacimiento') \
-#         .order_by('iso3')
+    # Rescates por dia de las OR sin chiapas y tabasco
+    rescates_por_dia = RescatePunto.objects.filter(fecha__in= array_fechasDia, oficinaRepre__in=ors_str) \
+        .exclude(aeropuerto=False, carretero=False, casaSeguridad=False, centralAutobus=False, 
+                 ferrocarril=False, hotel=False, puestosADispo=False, voluntarios=False, 
+                 otro=False) \
+        .values('nombre', 'apellidos', 'nacionalidad', 'sexo', 'edad', 'numFamilia') \
+        .order_by('nacionalidad')
 
-#     datosORs = list(rescates_por_dia)
+    datosORs = list(rescates_por_dia)
 
-#     # Rescates por dia de la OR CHIS
-#     rescates_por_dia_CHIS = RescatePunto.objects.filter(fecha__in=array_fechasDia, oficinaRepre="CHIAPAS") \
-#         .values('nombre', 'apellidos', 'iso3', 'puntoEstra', 'oficinaRepre', 'fecha', 'sexo', 'fechaNacimiento') \
-#         .order_by('iso3')
+    # Rescates por dia de la OR CHIS
+    rescates_por_dia_CHIS = RescatePunto.objects.filter(fecha__in=array_fechasDia, oficinaRepre="CHIAPAS") \
+        .exclude(aeropuerto=False, carretero=False, casaSeguridad=False, centralAutobus=False, 
+                 ferrocarril=False, hotel=False, puestosADispo=False, voluntarios=False, 
+                 otro=False) \
+        .values('nombre', 'apellidos', 'nacionalidad', 'puntoEstra', 'oficinaRepre', 'fecha', 'sexo', 'fechaNacimiento') \
+        .order_by('nacionalidad')
     
-#     total_dia = rescates_por_dia.count() + rescates_por_dia_CHIS.count()
+    total_dia = rescates_por_dia.count() + rescates_por_dia_CHIS.count()
 
-#     datosCHIS = list(rescates_por_dia_CHIS)
+    print(rescates_por_dia.count())
+    print(rescates_por_dia_CHIS.count())
 
-#     # Valores duplicados desde un año atras
-#     valores_duplicados = RescatePunto.objects.all() \
-#         .exclude(aeropuerto=False, carretero=False, casaSeguridad=False, centralAutobus=False, ferrocarril=False, hotel=False, puestosADispo=False, voluntarios=False, otro=False) \
-#         .values('nombre', 'apellidos', 'iso3') \
-#         .annotate(veces=Count('idRescate')) \
-#         .filter(veces__gt=1) \
-#         .order_by('-veces')
+    datosCHIS = list(rescates_por_dia_CHIS)
+
+    # Valores duplicados desde un año atras
+    valores_duplicados = RescatePunto.objects.all() \
+        .exclude(aeropuerto=False, carretero=False, casaSeguridad=False, centralAutobus=False, 
+                 ferrocarril=False, hotel=False, puestosADispo=False, voluntarios=False, 
+                 otro=False ) \
+        .values('nombre', 'apellidos', 'nacionalidad') \
+        .annotate(veces=Count('idRescate')) \
+        .filter(veces__gt=1) \
+        .order_by('-veces')
     
-#     print(valores_duplicados.count())
+    # print(valores_duplicados.count()) 
 
-#     valores_duplicados1year = {
-#         (valor['nombre'], valor['apellidos'], valor['iso3']): valor['veces']
-#         for valor in valores_duplicados
-#     }
+    valores_duplicados1year = {
+        (valor['nombre'], valor['apellidos'], valor['nacionalidad']): valor['veces']
+        for valor in valores_duplicados
+    }
 
 
-#     resultados = []
-#     rescatesNuevos = []
-#     for dato in datosORs:
-#         clave = (dato['nombre'], dato['apellidos'], dato['iso3'])
-#         veces = valores_duplicados1year.get(clave)  # Buscar en el diccionario
-#         if veces is not None:
-#             # print(veces)
-#             resultados.append({**dato, 'veces': veces})
-#         else:
-#             rescatesNuevos.append({**dato, 'veces': 0})
+    resultados = []
+    rescatesNuevos = []
+    for dato in datosORs:
+        clave = (dato['nombre'], dato['apellidos'], dato['nacionalidad'])
+        veces = valores_duplicados1year.get(clave)  # Buscar en el diccionario
+        if veces is not None:
+            # print(veces)
+            resultados.append({**dato, 'veces': veces})
+        else:
+            rescatesNuevos.append({**dato, 'veces': 0})
 
-#     for dato in datosCHIS:
-#         clave = (dato['nombre'], dato['apellidos'], dato['iso3'])
-#         veces = valores_duplicados1year.get(clave)  # Buscar en el diccionario
-#         if veces is not None:
-#             # print(veces)
-#             resultados.append({**dato, 'veces': veces + 1})
-#         else:
-#             resultados.append({**dato, 'veces': 1})  # Si no existe, agregar 'veces': 0 o lo que prefieras
+    for dato in datosCHIS:
+        clave = (dato['nombre'], dato['apellidos'], dato['nacionalidad'])
+        veces = valores_duplicados1year.get(clave)  # Buscar en el diccionario
+        if veces is not None:
+            # print(veces)
+            resultados.append({**dato, 'veces': veces + 1})
+        else:
+            resultados.append({**dato, 'veces': 1})  # Si no existe, agregar 'veces': 0 o lo que prefieras
 
-#     conteo = len(resultados)
-#     pass
+    total_Inadm = RescatePunto.objects.filter(fecha__in=array_fechasDia, aeropuerto=False, carretero=False, 
+                casaSeguridad=False, centralAutobus=False, ferrocarril=False, hotel=False, 
+                puestosADispo=False, voluntarios=False, otro=False ) \
+        .count()
+    
+    conteoReinci = len(resultados)
+    conteoNuevos = len(rescatesNuevos)
+
+    total_Rescates = conteoReinci + total_Inadm + conteoNuevos 
+
+    nacionalidades_nuevos = {d["nacionalidad"] for d in rescatesNuevos}
+
+    nuevos_datos_EM = {nacionalidad: {'total_EM':0} for nacionalidad in nacionalidades_nuevos}
+    nuevos_datos_DIF = {nacionalidad: {'total_DIF':0} for nacionalidad in nacionalidades_nuevos}
+
+    for d in rescatesNuevos:
+
+        if d['sexo'] == True and d['edad'] >= 18 and (d['numFamilia'] is None or d['numFamilia'] == 0):
+            nuevos_datos_EM[d["nacionalidad"]]["total_EM"] += 1
+        elif d['sexo'] == False and d['edad'] >= 18 and (d['numFamilia'] is None or d['numFamilia'] == 0):
+            nuevos_datos_EM[d["nacionalidad"]]["total_EM"] += 1
+        elif d['sexo'] == True and d['edad'] < 18 and (d['numFamilia'] is None or d['numFamilia'] == 0):
+            nuevos_datos_DIF[d["nacionalidad"]]["total_DIF"] += 1
+        elif d['sexo'] == False and d['edad'] < 18 and (d['numFamilia'] is None or d['numFamilia'] == 0):
+            nuevos_datos_DIF[d["nacionalidad"]]["total_DIF"] += 1
+        elif d['sexo'] == True and d['edad'] >= 18 and (d['numFamilia'] > 0):
+            nuevos_datos_DIF[d["nacionalidad"]]["total_DIF"] += 1
+        elif d['sexo'] == False and d['edad'] >= 18 and (d['numFamilia'] > 0):
+            nuevos_datos_DIF[d["nacionalidad"]]["total_DIF"] += 1
+        elif d['sexo'] == True and d['edad'] < 18 and (d['numFamilia'] > 0):
+            nuevos_datos_DIF[d["nacionalidad"]]["total_DIF"] += 1
+        elif d['sexo'] == False and d['edad'] < 18 and (d['numFamilia'] > 0):
+            nuevos_datos_DIF[d["nacionalidad"]]["total_DIF"] += 1
+        else:
+            print(d)
+
+    res_EM = dict(sorted(nuevos_datos_EM.items(), key=lambda x: x[1]["total_EM"], reverse=True))
+    res_DIF = dict(sorted(nuevos_datos_DIF.items(), key=lambda x: x[1]["total_DIF"], reverse=True))
+
+    corteEM = 5
+    if len(res_EM) <= 7:
+        corteEM = 7
+
+    corteDIF = 5
+    if len(res_DIF) <= 7:
+        corteDIF = 7
+
+    top5_EM = dict(list(res_EM.items())[:corteEM])
+    otros_suma_EM = sum(item["total_EM"] for item in list(res_EM.values())[corteEM:])
+
+    if len(res_EM) > corteEM:
+        top5_EM["Otras Nacs."] = {"total_EM": otros_suma_EM}
+
+    total_EM = sum(item["total_EM"] for item in list(top5_EM.values()))
+    top5_EM["Total"] = {"total_EM": total_EM}
+
+    top5_DIF = dict(list(res_DIF.items())[:corteDIF])
+    otros_suma_DIF = sum(item["total_DIF"] for item in list(res_DIF.values())[corteDIF:])
+
+    if len(res_DIF) > corteDIF:
+        top5_DIF["Otras Nacs."] = {"total_DIF": otros_suma_DIF}
+
+    total_DIF = sum(item["total_DIF"] for item in list(top5_DIF.values()))
+    top5_DIF["Total"] = {"total_DIF": total_DIF}
+
+
+    context = {
+        "fecha": fechaB.strftime("%d %b %Y"),
+        "rescatados": total_Rescates,
+        "reincidentes": conteoReinci,
+        "subtotal1": total_Rescates - conteoReinci,
+        "inadmitidos": total_Inadm,
+        "subtotal2": total_Rescates - conteoReinci - total_Inadm,
+        "retornados": 0,
+        "rescates_nuevos": conteoNuevos,
+        "rescates_EM": top5_EM,
+        "rescates_DIF": top5_DIF,
+        "EM_total": total_EM,
+        "DIF_total": total_DIF,
+    }
+
+    # Renderizar el template HTML con los datos
+    template = get_template("estadistica/cuadroDATOS.html")
+    html_string = template.render(context)
+
+    # Crear el PDF con WeasyPrint
+    pdf_file = HTML(string=html_string).write_pdf()
+
+    # Devolver el PDF como respuesta HTTP
+    response = HttpResponse(pdf_file, content_type="application/pdf")
+    response["Content-Disposition"] = 'inline; filename="cuadro_datos.pdf"'
+    return response

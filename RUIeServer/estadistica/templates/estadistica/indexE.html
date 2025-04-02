@@ -67,6 +67,22 @@
             
         </div>
 
+        <div class="bg-white p-4 rounded-lg shadow mb-8">
+            <h1 class="text-xl text-center font-semibold text-inm-marron-200 ">Cuadro de Datos</h1>
+            {% comment %} <h2 class="text-xxl font-semibold">Seleccione Intervalo de tiempo de busqueda:</h2> {% endcomment %}
+            <br>
+            <center>
+                <form id="form-fechaCECO" action="{% url 'generar_cuadro_diario' %}" enctype="multipart/form-data">{% csrf_token %}
+                    <label class="font-semibold text-inm-verde-100">Fecha</label>
+                    <input type="date" name="fechaI" id="id_fechaI" value="{{ hoy }}">
+                    <br>
+                    <br>
+                    <button class="py-4 px-4 mx-1 bg-inm-rojo-300 hover:bg-inm-marron-100 hover:text-2xl rounded-xl text-xl text-white text-center" type="submit">Descargar Reporte</button>
+                </form>
+            </center>
+            
+        </div>
+
         <!-- <div class="flex justify-center items-center p-4"> 
             <a href="{% url 'generar_pdf' %}" class="ml-6 basis-1/8 py-5 px-5 mx-1 bg-inm-rojo-300 hover:bg-inm-marron-100 hover:text-2xl rounded-xl text-xl text-white text-center" target="_blank">
                 Descargar Reporte de Estado de Fuerza en PDF
