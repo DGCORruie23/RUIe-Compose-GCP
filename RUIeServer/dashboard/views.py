@@ -253,7 +253,7 @@ def editarData(request, pk):
                 'idRescate': pk,
                 'fecha': rescate.fecha,
                 # 'fecha': fecha_res,
-                'hora': rescate.hora,
+                'hora': datetime.strptime(rescate.hora, "%H:%M").strftime("%H:%M"),
                 'tipo_punto' : puntoR,
                 'puntoEstra': rescate.puntoEstra,
                 'nacionalidad': rescate.nacionalidad,
@@ -339,6 +339,7 @@ def editarData(request, pk):
             # print(rescate.puntoEstra)
             
             return render(request, "dashboard/editarDato.html", context=datos )
+        
         if request.method == 'POST':
             form = RegistroNewForm(request.POST)
             datos = {
