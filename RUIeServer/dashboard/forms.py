@@ -67,48 +67,6 @@ choice_embarazo = (
     (False, 'No')
 )
 
-
-types_PRescate = []
-
-### Comentar para nueva base
-
-puntosF_ALL = EstadoFuerza.objects.all()
-
-
-for puntos in puntosF_ALL:
-    nomS = str(puntos.nomPuntoRevision)
-    nomS1 = ""
-    if nomS[0]== " ":
-        nomS1 = nomS[1:]
-    else:
-        nomS1 = nomS
-
-    types_PRescate.append((nomS1, nomS1))
-
-for puntos in PuntosInternacion.objects.all():
-    nomS = str(puntos.nombrePunto)
-    nomS1 = ""
-    if nomS[0]== " ":
-        nomS1 = nomS[1:]
-    else:
-        nomS1 = nomS
-
-    types_PRescate.append((nomS1, nomS1))
-
-types_PRescate.append(("Sin Información", "Sin Información"))
-
-for mun in Municipios.objects.all():
-    nomS = str(mun.nomMunicipio)
-    nomS1 = ""
-    if nomS[0]== " ":
-        nomS1 = nomS[1:]
-    else:
-        nomS1 = nomS
-
-    types_PRescate.append((nomS1, nomS1))
-
-## hasta aqui
-
 types_paises = []
 
 ## Segunda parte para comentar
@@ -207,11 +165,12 @@ class RegistroForm(forms.ModelForm):
 
 
 class RegistroNewForm(forms.Form):
+
     idRescate = forms.IntegerField(widget=forms.NumberInput(attrs={'type' : 'hidden'}), label="id")
     fecha = forms.CharField(widget=forms.TextInput(attrs={}), label="Fecha:")
     hora = forms.CharField(widget=forms.TextInput(attrs={'placeholder':'hrs:mins','type': 'time'}), label="Hora:")
     tipo_punto = forms.ChoiceField(choices=types_Puntos, label="Tipo de punto de Rescate:")
-    puntoEstra = forms.ChoiceField(choices=types_PRescate, label="Nombre punto de Rescate:")
+    puntoEstra = forms.ChoiceField(choices=[], label="Nombre punto de Rescate:")
     nacionalidad = forms.ChoiceField(choices=types_paises, label="Nacionalidad")
     nombre = forms.CharField(max_length=100)
     apellidos = forms.CharField(max_length=150)
@@ -221,6 +180,48 @@ class RegistroNewForm(forms.Form):
     embarazo = forms.ChoiceField(choices=choice_embarazo, label="Embarazo: ")
     numFamilia = forms.IntegerField(label="Numero de Familia")
     oficinaR = forms.CharField(widget=forms.TextInput(attrs={}), label="Oficina:")
+
+    def __init__(self, *args, **kwargs):
+        super(RegistroNewForm, self).__init__(*args, **kwargs)
+        ### Comentar para nueva base
+        types_PRescate = []
+        puntosF_ALL = EstadoFuerza.objects.all()
+
+        for puntos in puntosF_ALL:
+            nomS = str(puntos.nomPuntoRevision)
+            nomS1 = ""
+            if nomS[0]== " ":
+                nomS1 = nomS[1:]
+            else:
+                nomS1 = nomS
+
+            types_PRescate.append((nomS1, nomS1))
+
+        for puntos in PuntosInternacion.objects.all():
+            nomS = str(puntos.nombrePunto)
+            nomS1 = ""
+            if nomS[0]== " ":
+                nomS1 = nomS[1:]
+            else:
+                nomS1 = nomS
+
+            types_PRescate.append((nomS1, nomS1))
+
+        types_PRescate.append(("Sin Información", "Sin Información"))
+
+        for mun in Municipios.objects.all():
+            nomS = str(mun.nomMunicipio)
+            nomS1 = ""
+            if nomS[0]== " ":
+                nomS1 = nomS[1:]
+            else:
+                nomS1 = nomS
+
+            types_PRescate.append((nomS1, nomS1))
+
+        ## hasta aqui
+
+        self.fields['puntoEstra'].choices = types_PRescate
 
     def save(self, commit=True):
         

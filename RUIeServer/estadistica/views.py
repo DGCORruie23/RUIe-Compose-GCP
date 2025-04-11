@@ -288,9 +288,10 @@ def buscar_reincidente_ajax(request):
 @login_required
 def generar_pdf(request):
 
-    fecha1 = request.GET.get('fechaI', '')
 
-    datoRetorno = request.GET.get('retornos', '')
+    fecha1 = request.POST.get('fechaI', '')
+
+    datoRetorno = request.POST.get('retornos', '')
     # print(fecha1)
     # fecha a elegir
     fechaB = datetime.strptime(f"{fecha1}", "%Y-%m-%d")
@@ -579,7 +580,7 @@ def generar_pdf(request):
 @login_required
 def generar_pdf_ceco(request):
 
-    fecha1 = request.GET.get('fechaI', '')
+    fecha1 = request.POST.get('fechaI', '')
 
     fechaB = datetime.strptime(f"{fecha1}", "%Y-%m-%d")
 
@@ -686,7 +687,7 @@ def generar_pdf_ceco(request):
 @login_required
 def generar_cuadro_diario(request):
 
-    fecha1 = request.GET.get('fechaI', '')
+    fecha1 = request.POST.get('fechaI', '')
 
     fechaB = datetime.strptime(f"{fecha1}", "%Y-%m-%d")
 
@@ -851,3 +852,9 @@ def generar_cuadro_diario(request):
     response = HttpResponse(pdf_file, content_type="application/pdf")
     response["Content-Disposition"] = 'inline; filename="cuadro_datos.pdf"'
     return response
+
+
+@login_required
+def reporte_completo_diario(request):
+
+    pass
