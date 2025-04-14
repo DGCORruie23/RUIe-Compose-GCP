@@ -15,3 +15,4 @@ db.sqlite3
 /static_volume
 /RUIeServer/entorno
 /RUIeServer/tmp
+/test_files/*.xlsx
