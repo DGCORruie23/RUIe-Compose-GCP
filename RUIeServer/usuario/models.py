@@ -146,8 +146,8 @@ class EstadoFuerza(models.Model):
 
 class RescatePunto(models.Model):
     idRescate = models.AutoField(primary_key=True)
-    oficinaRepre = models.CharField(max_length=50)
-    fecha = models.CharField(max_length=10)
+    oficinaRepre = models.CharField(max_length=50, db_index=True)
+    fecha = models.CharField(max_length=10, db_index=True)
     hora = models.CharField(max_length=5)
     
     nombreAgente = models.CharField(max_length=300,blank=True)
@@ -183,7 +183,7 @@ class RescatePunto(models.Model):
     presuntosDelincuentes = models.BooleanField(default=False)
     numPresuntosDelincuentes = models.IntegerField()
     municipio = models.CharField(max_length=200, blank=True)
-    puntoEstra = models.CharField(max_length=250, blank=True)
+    puntoEstra = models.CharField(max_length=250, blank=True, db_index=True)
     
     nacionalidad = models.CharField(max_length=100)
     iso3 = models.CharField(max_length=3)

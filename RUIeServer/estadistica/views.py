@@ -47,6 +47,7 @@ ors_str = [
     "TLAXCALA",
     "VERACRUZ",
     "YUCATÁN",
+    "ZACATECAS",
         ]
 # Create your views here.
 @login_required
@@ -123,18 +124,18 @@ def reincidentes_xdia_ajax(request):
         }
 
         # Comparar cada entrada de datos1 con valores_unicos y obtener el valor de veces si existe
-        resultados = []
+        reincidentesOR = []
         rescatesNuevos = []
         for dato in datosORs:
             clave = (dato['nombre'], dato['apellidos'], dato['iso3'])
             veces = valores_duplicados1year.get(clave)  # Buscar en el diccionario
             if veces is not None:
                 # print(veces)
-                resultados.append({**dato, 'veces': veces})
+                reincidentesOR.append({**dato, 'veces': veces})
             else:
                 rescatesNuevos.append({**dato, 'veces': 0})
             # else:
-            #     resultados.append({**dato, 'veces': 1})  # Si no existe, agregar 'veces': 0 o lo que prefieras
+            #     reincidentesOR.append({**dato, 'veces': 1})  # Si no existe, agregar 'veces': 0 o lo que prefieras
 
         # Comparar cada entrada de datos1 con valores_unicos y obtener el valor de veces si existe
         for dato in datosCHIS:
@@ -142,11 +143,11 @@ def reincidentes_xdia_ajax(request):
             veces = valores_duplicados1year.get(clave)  # Buscar en el diccionario
             if veces is not None:
                 # print(veces)
-                resultados.append({**dato, 'veces': veces + 1})
+                reincidentesOR.append({**dato, 'veces': veces + 1})
             else:
-                resultados.append({**dato, 'veces': 1})  # Si no existe, agregar 'veces': 0 o lo que prefieras
+                reincidentesOR.append({**dato, 'veces': 1})  # Si no existe, agregar 'veces': 0 o lo que prefieras
 
-        conteo = len(resultados)
+        conteo = len(reincidentesOR)
         # # Crear el archivo Excel
         # ruta_archivo_excel = os.path.join(os.getcwd(), f'reincidetes_{fechaIN.day:02}_{fechaIN.month:02}_Pais.xlsx')
         
@@ -155,7 +156,7 @@ def reincidentes_xdia_ajax(request):
         data = [
             {
                 'fecha': fecha,
-                'resultados': resultados,
+                'reincidentesOR': reincidentesOR,
                 'total_r': total_dia,
                 'conteo': conteo,
                 'rescatesNuevos': rescatesNuevos,
@@ -212,18 +213,18 @@ def reincidentes_xfechas_ajax(request):
         }
 
         # Comparar cada entrada de datos1 con valores_unicos y obtener el valor de veces si existe
-        resultados = []
+        reincidentesOR = []
         rescatesNuevos = []
         for dato in datosORs:
             clave = (dato['nombre'], dato['apellidos'], dato['nacionalidad'])
             veces = valores_duplicados1year.get(clave)  # Buscar en el diccionario
             if veces is not None:
                 # print(veces)
-                resultados.append({**dato, 'veces': veces})
+                reincidentesOR.append({**dato, 'veces': veces})
             else:
                 rescatesNuevos.append({**dato, 'veces': 0})
             # else:
-            #     resultados.append({**dato, 'veces': 1})  # Si no existe, agregar 'veces': 0 o lo que prefieras
+            #     reincidentesOR.append({**dato, 'veces': 1})  # Si no existe, agregar 'veces': 0 o lo que prefieras
 
         # Comparar cada entrada de datos1 con valores_unicos y obtener el valor de veces si existe
         for dato in datosCHIS:
@@ -231,11 +232,11 @@ def reincidentes_xfechas_ajax(request):
             veces = valores_duplicados1year.get(clave)  # Buscar en el diccionario
             if veces is not None:
                 # print(veces)
-                resultados.append({**dato, 'veces': veces + 1})
+                reincidentesOR.append({**dato, 'veces': veces + 1})
             else:
-                resultados.append({**dato, 'veces': 1})  # Si no existe, agregar 'veces': 0 o lo que prefieras
+                reincidentesOR.append({**dato, 'veces': 1})  # Si no existe, agregar 'veces': 0 o lo que prefieras
 
-        conteo = len(resultados)
+        conteo = len(reincidentesOR)
         # # Crear el archivo Excel
         # ruta_archivo_excel = os.path.join(os.getcwd(), f'reincidetes_{fechaIN.day:02}_{fechaIN.month:02}_Pais.xlsx')
         
@@ -244,7 +245,7 @@ def reincidentes_xfechas_ajax(request):
         data = [
             {
                 'fecha': fechas,
-                'resultados': resultados,
+                'reincidentesOR': reincidentesOR,
                 'conteo': conteo,
                 'total_r1': total_dia,
                 'rescatesNuevos1': rescatesNuevos,
@@ -286,8 +287,698 @@ def buscar_reincidente_ajax(request):
 
 
 @login_required
-def generar_pdf(request):
+def generar_pdfT(request):
 
+    # obtenemos la fecha de consulta y el dato de los retornados
+    fecha1 = request.POST.get('fechaI', '')
+    datoRetorno = request.POST.get('retornos', '')
+
+    # convertimos la fecha en formatos diferente para poder hacer las consultas
+    fechaB = datetime.strptime(f"{fecha1}", "%Y-%m-%d")
+    fecha = fechaB.strftime("%d/%m/%Y")
+    # fechaIN = fechaB.strftime("%d-%m-%y")
+
+    # ---------------------------------------------------------
+    # -------------- generacion de consultas ------------------
+    # ---------------------------------------------------------
+
+
+    # -------------- consulta de todos los rescates ------------------
+
+    # Obtenemos los nombres de las oficinas(Estados) de la base de datos
+    # estadoF = EstadoFuerza.objects.all().order_by('oficinaR')
+    oficinas = EstadoFuerza.objects.values_list("oficinaR", flat=True).distinct().order_by('oficinaR')
+
+    fechaIN = fechaB
+    array_fechasDia = [(fechaIN + timedelta(days=d)).strftime("%d-%m-%y") for d in range((fechaIN - fechaIN).days + 1)]
+
+    # obtenemos las oficias
+    oficinasSinC = list(oficinas)
+    # Quitamos a chiapas para tratarlo de manera diferente
+    oficinasSinC.remove('CHIAPAS')
+
+    # Obtener Rescates del dia con todos los parametros
+    rescates_por_dia = RescatePunto.objects.filter(fecha__in= array_fechasDia, oficinaRepre__in=oficinasSinC) \
+        .exclude(aeropuerto=False, carretero=True, casaSeguridad=False, centralAutobus=False, 
+                ferrocarril=False, hotel=False, puestosADispo=False, voluntarios=True, 
+                otro=True) \
+        .values('nombre', 'apellidos', 'nacionalidad', 'oficinaRepre','puntoEstra','fecha', 'sexo', 'edad', 'numFamilia') \
+        .annotate(
+            total=Count('idRescate'),
+            total_aereos=Count('idRescate', filter=Q(aeropuerto=True)),
+            total_carreteros=Count('idRescate', filter=Q(carretero=True)),
+            total_central=Count('idRescate', filter=Q(centralAutobus=True)),
+            total_ferro=Count('idRescate', filter=Q(ferrocarril=True)),
+            total_puestos=Count('idRescate', filter=Q(puestosADispo=True)),
+            total_otros=( Count('idRescate', Q(voluntarios=True)) + 
+                         Count('idRescate', Q(otro=True)) + 
+                         Count('idRescate', filter=Q(aeropuerto=False, carretero=False, centralAutobus=False, ferrocarril=False ,casaSeguridad=False, hotel=False, puestosADispo=False, voluntarios=False, otro=False)) +
+                         Count('idRescate', Q(casaSeguridad=True)) + 
+                         Count('idRescate', Q(hotel=True))
+                         ),
+            ) \
+        .order_by("oficinaRepre", 'puntoEstra','nacionalidad')
+
+    datosORs = list(rescates_por_dia)
+
+    # Rescates por dia de la OR CHIS con todos los parametros
+    rescates_por_dia_CHIS = RescatePunto.objects.filter(fecha__in=array_fechasDia, oficinaRepre="CHIAPAS") \
+        .exclude(aeropuerto=False, carretero=True, casaSeguridad=False, centralAutobus=False, 
+                ferrocarril=False, hotel=False, puestosADispo=False, voluntarios=True, 
+                otro=True) \
+        .values('nombre', 'apellidos', 'nacionalidad', 'oficinaRepre','puntoEstra','fecha', 'sexo', 'edad', 'numFamilia', 'idRescate') \
+        .annotate(
+            total=Count('idRescate'),
+            total_aereos=Count('idRescate', filter=Q(aeropuerto=True)),
+            total_carreteros=Count('idRescate', filter=Q(carretero=True)),
+            total_central=Count('idRescate', filter=Q(centralAutobus=True)),
+            total_ferro=Count('idRescate', filter=Q(ferrocarril=True)),
+            total_puestos=Count('idRescate', filter=Q(puestosADispo=True)),
+            total_otros=( Count('idRescate', Q(voluntarios=True)) + 
+                         Count('idRescate', Q(otro=True)) + 
+                         Count('idRescate', filter=Q(aeropuerto=False, carretero=False, centralAutobus=False, ferrocarril=False ,casaSeguridad=False, hotel=False, puestosADispo=False, voluntarios=False, otro=False)) +
+                         Count('idRescate', Q(casaSeguridad=True)) + 
+                         Count('idRescate', Q(hotel=True))
+                         ),
+            ) \
+        .order_by("oficinaRepre", 'puntoEstra','nacionalidad')
+    
+    
+    # rescates_raros = RescatePunto.objects.filter(fecha__in=array_fechasDia, oficinaRepre="CHIAPAS")
+    
+    # todos_ids = set(rescates_raros.values_list('idRescate', flat=True))
+    # unos_ids = set(rescates_por_dia_CHIS.values_list('idRescate', flat=True))
+
+    # print(todos_ids - unos_ids)
+    
+    datosCHIS = list(rescates_por_dia_CHIS)
+
+    print(f" rescates ors {len(rescates_por_dia)} chis {len(rescates_por_dia_CHIS)}")
+
+    # Valores duplicados desde un año atras
+    valores_duplicados = RescatePunto.objects.all() \
+        .values('nombre', 'apellidos', 'nacionalidad') \
+        .annotate(veces=Count('idRescate')) \
+        .filter(veces__gt=1) \
+        .order_by('-veces')
+    
+    # print(valores_duplicados.count())
+
+    valores_duplicados1year = {
+        (valor['nombre'], valor['apellidos'], valor['nacionalidad']): valor['veces']
+        for valor in valores_duplicados
+    }
+
+    # Se calculan los rescates reincidentes y por primera vez
+    # Comparar cada entrada de los rescates diarios con valores_duplicados1year 
+    # y obtener el valor de veces si existe con todos menos chiapas
+
+    reincidentesOR = []
+    rescatesNuevos = []
+    for dato in datosORs:
+        clave = (dato['nombre'], dato['apellidos'], dato['nacionalidad'])
+        veces = valores_duplicados1year.get(clave)  # Buscar en el diccionario
+        if veces is not None:
+            # print(veces)
+            reincidentesOR.append({**dato, 'veces': veces})
+        else:
+            rescatesNuevos.append({**dato, 'veces': 0})
+        # else:
+        #     reincidentesOR.append({**dato, 'veces': 1})  # Si no existe, agregar 'veces': 0 o lo que prefieras
+
+    # Comparar cada entrada de los rescates diarios con valores_duplicados1year y obtener el valor de veces si existe 
+    for dato in datosCHIS:
+        clave = (dato['nombre'], dato['apellidos'], dato['nacionalidad'])
+        veces = valores_duplicados1year.get(clave)  # Buscar en el diccionario
+        if veces is not None:
+            # print(veces)
+            reincidentesOR.append({**dato, 'veces': veces + 1})
+        else:
+            reincidentesOR.append({**dato, 'veces': 1})  # Si no existe, agregar 'veces': 0 o lo que prefieras
+
+    # ##############################################################################
+    #-------================ Datos Informe de Operaciones =================----------
+    # ##############################################################################
+    
+    # ---------------------------------------------------------------------------
+    # ------------------ Generamos Datos para la primera tabla ------------------
+    
+    # Se genera un diccionario para guardar el conteo de datos
+    conteo_rescates = {
+        nombre: {
+            "total": 0,
+            "total_aereos": 0,
+            "total_carreteros": 0,
+            "total_central": 0,
+            "total_ferro": 0,
+            "total_puestos": 0,
+            "total_otros": 0
+        }
+        for nombre in oficinas
+    }
+
+    conteo_rescates["Total"] = {
+            "total": 0,
+            "total_aereos": 0,
+            "total_carreteros": 0,
+            "total_central": 0,
+            "total_ferro": 0,
+            "total_puestos": 0,
+            "total_otros": 0
+        }
+
+    # Se calcula el total de rescates carreteros, ferroviarios, etc
+    # for dato in rescates_por_dia:
+    for dato in rescatesNuevos:
+        oficina = dato["oficinaRepre"]
+        if oficina in conteo_rescates:
+            a_aux = dato.get("total", 0)
+            b_aux = dato.get("total_aereos", 0)
+            c_aux = dato.get("total_carreteros", 0)
+            d_aux = dato.get("total_central", 0)
+            e_aux = dato.get("total_ferro", 0)
+            f_aux = dato.get("total_puestos", 0)
+            g_aux = dato.get("total_otros", 0)
+
+            conteo_rescates[oficina]["total"] += a_aux
+            conteo_rescates[oficina]["total_aereos"] += b_aux
+            conteo_rescates[oficina]["total_carreteros"] += c_aux
+            conteo_rescates[oficina]["total_central"] += d_aux
+            conteo_rescates[oficina]["total_ferro"] += e_aux
+            conteo_rescates[oficina]["total_puestos"] += f_aux
+            conteo_rescates[oficina]["total_otros"] += g_aux
+
+            conteo_rescates["Total"]["total"] += a_aux
+            conteo_rescates["Total"]["total_aereos"] += b_aux
+            conteo_rescates["Total"]["total_carreteros"] += c_aux
+            conteo_rescates["Total"]["total_central"] += d_aux
+            conteo_rescates["Total"]["total_ferro"] += e_aux
+            conteo_rescates["Total"]["total_puestos"] += f_aux
+            conteo_rescates["Total"]["total_otros"] += g_aux
+
+    # --------------------------------------------------------------------------
+    # ----------------------- Generar Datos segunda tabla ----------------------
+
+    #  Se generan los tablas de las oficinas para agrupar
+    reincidentes_oficina = Counter(d["oficinaRepre"] for d in reincidentesOR)
+    nuevos_oficina = Counter(d["oficinaRepre"] for d in rescatesNuevos)
+
+    conteo_reincidentes = {
+        nombre: {
+            "total": 0,
+            "total_reincidentes": 0,
+            "total_nuevos": 0,
+        }
+        for nombre in oficinas
+    }
+
+    conteo_reincidentes["Total"] = {
+            "total": 0,
+            "total_reincidentes": 0,
+            "total_nuevos": 0,
+        }
+
+    for oficina, count in reincidentes_oficina.items():
+        if oficina in conteo_reincidentes:
+            conteo_reincidentes[oficina]["total_reincidentes"] = count
+            conteo_reincidentes['Total']["total_reincidentes"] += count
+
+    for oficina, count in nuevos_oficina.items():
+        if oficina in conteo_reincidentes:
+            conteo_reincidentes[oficina]["total_nuevos"] = count
+            conteo_reincidentes['Total']["total_nuevos"] += count
+
+    for nombre in conteo_reincidentes:
+        total_aux = conteo_reincidentes[nombre]['total_reincidentes'] + conteo_reincidentes[nombre]['total_nuevos']
+        conteo_reincidentes[nombre]["total"] = total_aux
+        conteo_reincidentes['Total']["total"] = total_aux
+
+    # --------------------------------------------------------------------------
+    # ------------------------ Generar Datos 3: Tercera tabla ------------------
+
+    nacionalidades_nuevos = {d["nacionalidad"] for d in rescatesNuevos}
+
+    nuevos_datos_nacio = {nacionalidad: {"H_AS": 0, "M_AS": 0, "H_mS": 0, "M_mS": 0, "H_AA": 0, "M_AA": 0, "H_mA": 0, "M_mA": 0, 'total':0 } for nacionalidad in nacionalidades_nuevos}
+
+    for d in rescatesNuevos:
+        nuevos_datos_nacio[d["nacionalidad"]]["total"] += 1
+
+        if d['sexo'] == True and d['edad'] >= 18 and (d['numFamilia'] is None or d['numFamilia'] == 0):
+            nuevos_datos_nacio[d["nacionalidad"]]["H_AS"] += 1
+        elif d['sexo'] == False and d['edad'] >= 18 and (d['numFamilia'] is None or d['numFamilia'] == 0):
+            nuevos_datos_nacio[d["nacionalidad"]]["M_AS"] += 1
+        elif d['sexo'] == True and d['edad'] < 18 and (d['numFamilia'] is None or d['numFamilia'] == 0):
+            nuevos_datos_nacio[d["nacionalidad"]]["H_mS"] += 1
+        elif d['sexo'] == False and d['edad'] < 18 and (d['numFamilia'] is None or d['numFamilia'] == 0):
+            nuevos_datos_nacio[d["nacionalidad"]]["M_mS"] += 1
+        elif d['sexo'] == True and d['edad'] >= 18 and (d['numFamilia'] > 0):
+            nuevos_datos_nacio[d["nacionalidad"]]["H_AA"] += 1
+        elif d['sexo'] == False and d['edad'] >= 18 and (d['numFamilia'] > 0):
+            nuevos_datos_nacio[d["nacionalidad"]]["M_AA"] += 1
+        elif d['sexo'] == True and d['edad'] < 18 and (d['numFamilia'] > 0):
+            nuevos_datos_nacio[d["nacionalidad"]]["H_mA"] += 1
+        elif d['sexo'] == False and d['edad'] < 18 and (d['numFamilia'] > 0):
+            nuevos_datos_nacio[d["nacionalidad"]]["M_mA"] += 1
+        else:
+            print(d)
+
+
+    # ----------------------------------------------------------------------
+    # ------------------- Tratar Datos 4: Cuarta tabla ---------------------
+
+    nacionalidades_reinc = {d["nacionalidad"] for d in reincidentesOR}
+
+    reincidentes_datos_nacio = {nacionalidad: {"H_AS": 0, "M_AS": 0, "H_mS": 0, "M_mS": 0, "H_AA": 0, "M_AA": 0, "H_mA": 0, "M_mA": 0, 'total':0 } for nacionalidad in nacionalidades_reinc}
+
+    for d in reincidentesOR:
+        reincidentes_datos_nacio[d["nacionalidad"]]["total"] += 1
+
+        if d['sexo'] == True and d['edad'] >= 18 and (d['numFamilia'] is None or d['numFamilia'] == 0):
+            reincidentes_datos_nacio[d["nacionalidad"]]["H_AS"] += 1
+        elif d['sexo'] == False and d['edad'] >= 18 and (d['numFamilia'] is None or d['numFamilia'] == 0):
+            reincidentes_datos_nacio[d["nacionalidad"]]["M_AS"] += 1
+        elif d['sexo'] == True and d['edad'] < 18 and (d['numFamilia'] is None or d['numFamilia'] == 0):
+            reincidentes_datos_nacio[d["nacionalidad"]]["H_mS"] += 1
+        elif d['sexo'] == False and d['edad'] < 18 and (d['numFamilia'] is None or d['numFamilia'] == 0):
+            reincidentes_datos_nacio[d["nacionalidad"]]["M_mS"] += 1
+        elif d['sexo'] == True and d['edad'] >= 18 and (d['numFamilia'] > 0):
+            reincidentes_datos_nacio[d["nacionalidad"]]["H_AA"] += 1
+        elif d['sexo'] == False and d['edad'] >= 18 and (d['numFamilia'] > 0):
+            reincidentes_datos_nacio[d["nacionalidad"]]["M_AA"] += 1
+        elif d['sexo'] == True and d['edad'] < 18 and (d['numFamilia'] > 0):
+            reincidentes_datos_nacio[d["nacionalidad"]]["H_mA"] += 1
+        elif d['sexo'] == False and d['edad'] < 18 and (d['numFamilia'] > 0):
+            reincidentes_datos_nacio[d["nacionalidad"]]["M_mA"] += 1
+        else:
+            print(d)
+
+    # ##############################################################################
+    #-------------================ Datos CUADRO =================----------------
+    # ##############################################################################
+
+
+    total_Inadm = RescatePunto.objects.filter(fecha__in=array_fechasDia, 
+                aeropuerto=False, carretero=True, casaSeguridad=False, centralAutobus=False, 
+                ferrocarril=False, hotel=False, puestosADispo=False, voluntarios=True, 
+                otro=True) \
+        .count()
+    
+    conteoReinci = len(reincidentesOR)
+    conteoNuevos = len(rescatesNuevos)
+
+    total_Rescates = conteoReinci + total_Inadm + conteoNuevos 
+
+    nacionalidades_nuevos = {d["nacionalidad"] for d in rescatesNuevos}
+
+    nuevos_datos_EM = {nacionalidad: {'total_EM':0} for nacionalidad in nacionalidades_nuevos}
+    nuevos_datos_DIF = {nacionalidad: {'total_DIF':0} for nacionalidad in nacionalidades_nuevos}
+
+    for d in rescatesNuevos:
+
+        if d['sexo'] == True and d['edad'] >= 18 and (d['numFamilia'] is None or d['numFamilia'] == 0):
+            nuevos_datos_EM[d["nacionalidad"]]["total_EM"] += 1
+        elif d['sexo'] == False and d['edad'] >= 18 and (d['numFamilia'] is None or d['numFamilia'] == 0):
+            nuevos_datos_EM[d["nacionalidad"]]["total_EM"] += 1
+        elif d['sexo'] == True and d['edad'] < 18 and (d['numFamilia'] is None or d['numFamilia'] == 0):
+            nuevos_datos_DIF[d["nacionalidad"]]["total_DIF"] += 1
+        elif d['sexo'] == False and d['edad'] < 18 and (d['numFamilia'] is None or d['numFamilia'] == 0):
+            nuevos_datos_DIF[d["nacionalidad"]]["total_DIF"] += 1
+        elif d['sexo'] == True and d['edad'] >= 18 and (d['numFamilia'] > 0):
+            nuevos_datos_DIF[d["nacionalidad"]]["total_DIF"] += 1
+        elif d['sexo'] == False and d['edad'] >= 18 and (d['numFamilia'] > 0):
+            nuevos_datos_DIF[d["nacionalidad"]]["total_DIF"] += 1
+        elif d['sexo'] == True and d['edad'] < 18 and (d['numFamilia'] > 0):
+            nuevos_datos_DIF[d["nacionalidad"]]["total_DIF"] += 1
+        elif d['sexo'] == False and d['edad'] < 18 and (d['numFamilia'] > 0):
+            nuevos_datos_DIF[d["nacionalidad"]]["total_DIF"] += 1
+        else:
+            print(d)
+
+    res_EM = dict(sorted(nuevos_datos_EM.items(), key=lambda x: x[1]["total_EM"], reverse=True))
+    res_DIF = dict(sorted(nuevos_datos_DIF.items(), key=lambda x: x[1]["total_DIF"], reverse=True))
+
+    corteEM = 5
+    if len(res_EM) <= 7:
+        corteEM = 7
+
+    corteDIF = 5
+    if len(res_DIF) <= 7:
+        corteDIF = 7
+
+    top5_EM = dict(list(res_EM.items())[:corteEM])
+    otros_suma_EM = sum(item["total_EM"] for item in list(res_EM.values())[corteEM:])
+
+    if len(res_EM) > corteEM:
+        top5_EM["Otras Nacs."] = {"total_EM": otros_suma_EM}
+
+    total_EM = sum(item["total_EM"] for item in list(top5_EM.values()))
+    top5_EM["Total"] = {"total_EM": total_EM}
+
+    top5_DIF = dict(list(res_DIF.items())[:corteDIF])
+    otros_suma_DIF = sum(item["total_DIF"] for item in list(res_DIF.values())[corteDIF:])
+
+    if len(res_DIF) > corteDIF:
+        top5_DIF["Otras Nacs."] = {"total_DIF": otros_suma_DIF}
+
+    total_DIF = sum(item["total_DIF"] for item in list(top5_DIF.values()))
+    top5_DIF["Total"] = {"total_DIF": total_DIF}
+
+
+    # ##############################################################################
+    #-------------================ Datos Para CECO =================----------------
+    # ##############################################################################
+
+
+    # --------------------------------------------------------------------------
+    # ------------------------ Rescates por OR y punto  ------------------
+
+    fechaIN = fechaB.strftime("%d-%m-%y")
+
+    ORs_CECO_S = [
+        "CAMPECHE",
+        "CHIAPAS",
+        "HIDALGO",
+        "EDOMEX",
+        "OAXACA",
+        "PUEBLA",
+        "QUINTANA ROO",
+        "TABASCO",
+        "TLAXCALA",
+        "VERACRUZ",
+        "YUCATÁN",
+    ]
+
+    ORs_CECO_N = [
+        "BAJA CALIFORNIA",
+        "CHIHUAHUA",
+        "COAHUILA",
+        "DURANGO",
+        "NUEVO LEÓN",
+        "SAN LUIS POTOSÍ",
+        "SINALOA",
+        "SONORA",
+        "TAMAULIPAS",
+    ]
+
+    ORs_CECO_C = [
+        "AGUASCALIENTES",
+        "BAJA CALIFORNIA SUR",
+        "COLIMA",
+        "CDMX",
+        "GUANAJUATO",
+        "GUERRERO",
+        "JALISCO",
+        "MICHOACÁN",
+        "MORELOS",
+        "NAYARIT",
+        "QUERÉTARO",
+        "ZACATECAS",
+    ]
+
+    puntoE_nuevos = {
+        nombre: {
+            "puntos": {},
+            "total": 0
+        }
+        for nombre in ORs_CECO_S
+    }
+
+    for dato in rescatesNuevos:
+        puntoEOr = dato["puntoEstra"]
+        oficinaAux = dato["oficinaRepre"]
+
+        if puntoEOr == '':
+            puntoEOr = 'Voluntarios'
+         
+        if puntoE_nuevos.get(oficinaAux) is not None:
+            if puntoEOr not in puntoE_nuevos[oficinaAux]['puntos']:
+                puntoE_nuevos[oficinaAux]['puntos'][puntoEOr] = 0
+
+            puntoE_nuevos[oficinaAux]['puntos'][puntoEOr] += 1
+
+            puntoE_nuevos[oficinaAux]['total'] += 1
+
+    puntoE_reinc = {
+        nombre: {
+            "puntos": {},
+            "total": 0
+        }
+        for nombre in ORs_CECO_S
+    }
+
+    for dato in reincidentesOR:
+        puntoEOr = dato["puntoEstra"]
+        oficinaAux = dato["oficinaRepre"]
+
+        if puntoEOr == '':
+            puntoEOr = 'Voluntarios'
+         
+        if puntoE_reinc.get(oficinaAux) is not None:
+            if puntoEOr not in puntoE_reinc[oficinaAux]['puntos']:
+                puntoE_reinc[oficinaAux]['puntos'][puntoEOr] = 0
+
+            puntoE_reinc[oficinaAux]['puntos'][puntoEOr] += 1
+
+            puntoE_reinc[oficinaAux]['total'] += 1
+
+
+    # --------------------------------------------------------------------------
+    # ------------------------ Cuadro de rescates por OR del CECO  ------------------
+
+    CECO_ORs_N = {
+        nombre: {
+            "nuevos": 0,
+            "reincidentes": 0,
+            "total": 0
+        }
+        for nombre in ORs_CECO_N
+    }
+    SubT_CECO_ORs_N = {
+            "nuevos": 0,
+            "reincidentes": 0,
+            "total": 0
+        }
+
+    CECO_ORs_C = {
+        nombre: {
+            "nuevos": 0,
+            "reincidentes": 0,
+            "total": 0
+        }
+        for nombre in ORs_CECO_C
+    }
+    SubT_CECO_ORs_C = {
+            "nuevos": 0,
+            "reincidentes": 0,
+            "total": 0
+        }
+
+    CECO_ORs_S = {
+        nombre: {
+            "nuevos": 0,
+            "reincidentes": 0,
+            "total": 0
+        }
+        for nombre in ORs_CECO_S
+    }
+    SubT_CECO_ORs_S = {
+            "nuevos": 0,
+            "reincidentes": 0,
+            "total": 0
+        }
+    
+    nac_1_reinc = {}
+    total_nac_1_reinc = {
+                "nuevos": 0,
+                "reincidentes": 0,
+                "total": 0
+            }
+
+    for dato in rescatesNuevos:
+        oficinaAux = dato["oficinaRepre"]
+        if CECO_ORs_N.get(oficinaAux) is not None:
+            CECO_ORs_N[oficinaAux]['nuevos'] += 1
+            CECO_ORs_N[oficinaAux]['total'] += 1
+            SubT_CECO_ORs_N['nuevos'] += 1
+            SubT_CECO_ORs_N['total'] += 1
+        elif CECO_ORs_C.get(oficinaAux) is not None:
+            CECO_ORs_C[oficinaAux]['nuevos'] += 1
+            CECO_ORs_C[oficinaAux]['total'] += 1
+            SubT_CECO_ORs_C['nuevos'] += 1
+            SubT_CECO_ORs_C['total'] += 1
+        elif CECO_ORs_S.get(oficinaAux) is not None:
+            CECO_ORs_S[oficinaAux]['nuevos'] += 1
+            CECO_ORs_S[oficinaAux]['total'] += 1
+            SubT_CECO_ORs_S['nuevos'] += 1
+            SubT_CECO_ORs_S['total'] += 1
+        else:
+            pass
+
+        nacionalidadN = str(dato["nacionalidad"]).upper()
+
+        if nacionalidadN not in nac_1_reinc:
+            nac_1_reinc[nacionalidadN] = {
+                "nuevos": 0,
+                "reincidentes": 0,
+                "total": 0
+            }
+        nac_1_reinc[nacionalidadN]['nuevos'] += 1
+        nac_1_reinc[nacionalidadN]['total'] += 1
+
+        total_nac_1_reinc['nuevos'] += 1
+        total_nac_1_reinc['total'] += 1
+
+
+    
+    for dato in reincidentesOR:
+        oficinaAux = dato["oficinaRepre"]
+        if CECO_ORs_N.get(oficinaAux) is not None:
+            CECO_ORs_N[oficinaAux]['reincidentes'] += 1
+            CECO_ORs_N[oficinaAux]['total'] += 1
+            SubT_CECO_ORs_N['reincidentes'] += 1
+            SubT_CECO_ORs_N['total'] += 1
+        elif CECO_ORs_C.get(oficinaAux) is not None:
+            CECO_ORs_C[oficinaAux]['reincidentes'] += 1
+            CECO_ORs_C[oficinaAux]['total'] += 1
+            SubT_CECO_ORs_C['reincidentes'] += 1
+            SubT_CECO_ORs_C['total'] += 1
+        elif CECO_ORs_S.get(oficinaAux) is not None:
+            CECO_ORs_S[oficinaAux]['reincidentes'] += 1
+            CECO_ORs_S[oficinaAux]['total'] += 1
+            SubT_CECO_ORs_S['reincidentes'] += 1
+            SubT_CECO_ORs_S['total'] += 1
+        else:
+            pass
+
+        nacionalidadN = str(dato["nacionalidad"]).upper()
+
+        if nacionalidadN not in nac_1_reinc:
+            nac_1_reinc[nacionalidadN] = {
+                "nuevos": 0,
+                "reincidentes": 0,
+                "total": 0
+            }
+        nac_1_reinc[nacionalidadN]['reincidentes'] += 1
+        nac_1_reinc[nacionalidadN]['total'] += 1
+
+        total_nac_1_reinc['reincidentes'] += 1
+        total_nac_1_reinc['total'] += 1
+    
+    # --------------------------------------------------------------------------
+    # ------------------------ Rescates por OR y nacionalidad  ------------------
+
+    conteo_nacionalidadN = { nombre: {} for nombre in oficinas }
+
+    for d in rescatesNuevos:
+        # print(d)
+        oficinaR=d["oficinaRepre"]
+        nacionalidad = d["nacionalidad"]
+
+        if conteo_nacionalidadN.get(oficinaR) is not None:
+            if nacionalidad not in conteo_nacionalidadN[oficinaR]:
+                conteo_nacionalidadN[oficinaR][nacionalidad] = {"H_AS": 0, "M_AS": 0, "H_mS": 0, "M_mS": 0, "H_AA": 0, "M_AA": 0, "H_mA": 0, "M_mA": 0, 'total':0 }
+
+            conteo_nacionalidadN[oficinaR][nacionalidad]["total"] +=1
+
+            # print(d)
+
+            if d['sexo'] == True and d['edad'] >= 18 and (d['numFamilia'] is None or d['numFamilia'] == 0):
+                conteo_nacionalidadN[oficinaR][nacionalidad]["H_AS"] += 1
+            elif d['sexo'] == False and d['edad'] >= 18 and (d['numFamilia'] is None or d['numFamilia'] == 0):
+                conteo_nacionalidadN[oficinaR][nacionalidad]["M_AS"] += 1
+            elif d['sexo'] == True and d['edad'] < 18 and (d['numFamilia'] is None or d['numFamilia'] == 0):
+                conteo_nacionalidadN[oficinaR][nacionalidad]["H_mS"] += 1
+            elif d['sexo'] == False and d['edad'] < 18 and (d['numFamilia'] is None or d['numFamilia'] == 0):
+                conteo_nacionalidadN[oficinaR][nacionalidad]["M_mS"] += 1
+            elif d['sexo'] == True and d['edad'] >= 18 and (d['numFamilia'] > 0):
+                conteo_nacionalidadN[oficinaR][nacionalidad]["H_AA"] += 1
+            elif d['sexo'] == False and d['edad'] >= 18 and (d['numFamilia'] > 0):
+                conteo_nacionalidadN[oficinaR][nacionalidad]["M_AA"] += 1
+            elif d['sexo'] == True and d['edad'] < 18 and (d['numFamilia'] > 0):
+                conteo_nacionalidadN[oficinaR][nacionalidad]["H_mA"] += 1
+            elif d['sexo'] == False and d['edad'] < 18 and (d['numFamilia'] > 0):
+                conteo_nacionalidadN[oficinaR][nacionalidad]["M_mA"] += 1
+            else:
+                print(d)
+
+    
+    conteo_nacionalidadR = { nombre: {} for nombre in oficinas }
+
+    for d in reincidentesOR:
+        # print(d)
+        oficinaR=d["oficinaRepre"]
+        nacionalidad = d["nacionalidad"]
+
+        if conteo_nacionalidadR.get(oficinaR) is not None:
+            if nacionalidad not in conteo_nacionalidadR[oficinaR]:
+                conteo_nacionalidadR[oficinaR][nacionalidad] = {"H_AS": 0, "M_AS": 0, "H_mS": 0, "M_mS": 0, "H_AA": 0, "M_AA": 0, "H_mA": 0, "M_mA": 0, 'total':0 }
+
+            conteo_nacionalidadR[oficinaR][nacionalidad]["total"] +=1
+
+            # print(d)
+
+            if d['sexo'] == True and d['edad'] >= 18 and (d['numFamilia'] is None or d['numFamilia'] == 0):
+                conteo_nacionalidadR[oficinaR][nacionalidad]["H_AS"] += 1
+            elif d['sexo'] == False and d['edad'] >= 18 and (d['numFamilia'] is None or d['numFamilia'] == 0):
+                conteo_nacionalidadR[oficinaR][nacionalidad]["M_AS"] += 1
+            elif d['sexo'] == True and d['edad'] < 18 and (d['numFamilia'] is None or d['numFamilia'] == 0):
+                conteo_nacionalidadR[oficinaR][nacionalidad]["H_mS"] += 1
+            elif d['sexo'] == False and d['edad'] < 18 and (d['numFamilia'] is None or d['numFamilia'] == 0):
+                conteo_nacionalidadR[oficinaR][nacionalidad]["M_mS"] += 1
+            elif d['sexo'] == True and d['edad'] >= 18 and (d['numFamilia'] > 0):
+                conteo_nacionalidadR[oficinaR][nacionalidad]["H_AA"] += 1
+            elif d['sexo'] == False and d['edad'] >= 18 and (d['numFamilia'] > 0):
+                conteo_nacionalidadR[oficinaR][nacionalidad]["M_AA"] += 1
+            elif d['sexo'] == True and d['edad'] < 18 and (d['numFamilia'] > 0):
+                conteo_nacionalidadR[oficinaR][nacionalidad]["H_mA"] += 1
+            elif d['sexo'] == False and d['edad'] < 18 and (d['numFamilia'] > 0):
+                conteo_nacionalidadR[oficinaR][nacionalidad]["M_mA"] += 1
+            else:
+                print(d)
+
+    
+    # Crear el contexto con los datos
+    context = {
+        "fecha_actual": fecha,
+        "dato": datoRetorno,
+        "rescates": conteo_rescates,
+        "reincidentes": conteo_reincidentes,
+        "nacionalidades": dict(sorted(nuevos_datos_nacio.items(), key=lambda x: x[1]["total"], reverse=True)),
+        "nacionalidades_re": dict(sorted(reincidentes_datos_nacio.items(), key=lambda x: x[1]["total"], reverse=True)),
+
+        "rescOR_puntoN": puntoE_nuevos,
+        "rescOR_puntoR": puntoE_reinc,
+        "rescOR_nacN": conteo_nacionalidadN,
+        "rescOR_nacR": conteo_nacionalidadR,
+
+        "fecha": fechaB.strftime("%d %b %Y"),
+        "rescatados": total_Rescates,
+        "reincidentesC": conteoReinci,
+        "subtotal1": total_Rescates - conteoReinci,
+        "inadmitidos": total_Inadm,
+        "subtotal2": total_Rescates - conteoReinci - total_Inadm,
+        "retornados": 0,
+        "rescates_nuevos": conteoNuevos,
+        "rescates_EM": top5_EM,
+        "rescates_DIF": top5_DIF,
+        "EM_total": total_EM,
+        "DIF_total": total_DIF,
+
+        "CECO_N": dict(sorted(CECO_ORs_N.items(), key=lambda x: x[1]["total"], reverse=True)),
+        "CECO_C": dict(sorted(CECO_ORs_C.items(), key=lambda x: x[1]["total"], reverse=True)),
+        "CECO_S": dict(sorted(CECO_ORs_S.items(), key=lambda x: x[1]["total"], reverse=True)),
+        "Sub_CECO_N": SubT_CECO_ORs_N,
+        "Sub_CECO_C": SubT_CECO_ORs_C,
+        "Sub_CECO_S": SubT_CECO_ORs_S,
+        "Nac_1_Rein": dict(sorted(nac_1_reinc.items(), key=lambda x: x[1]["total"], reverse=True)),
+        "Total_Nac_1_Rein": total_nac_1_reinc,
+    }
+
+    return render(request, "estadistica/reporteA_js.html", context)
+
+
+@login_required
+def generar_pdf(request):
 
     fecha1 = request.POST.get('fechaI', '')
 
@@ -408,18 +1099,18 @@ def generar_pdf(request):
     }
 
     # Comparar cada entrada de datos1 con valores_unicos y obtener el valor de veces si existe
-    resultados = []
+    reincidentesOR = []
     rescatesNuevos = []
     for dato in datosORs:
         clave = (dato['nombre'], dato['apellidos'], dato['nacionalidad'])
         veces = valores_duplicados1year.get(clave)  # Buscar en el diccionario
         if veces is not None:
             # print(veces)
-            resultados.append({**dato, 'veces': veces})
+            reincidentesOR.append({**dato, 'veces': veces})
         else:
             rescatesNuevos.append({**dato, 'veces': 0})
         # else:
-        #     resultados.append({**dato, 'veces': 1})  # Si no existe, agregar 'veces': 0 o lo que prefieras
+        #     reincidentesOR.append({**dato, 'veces': 1})  # Si no existe, agregar 'veces': 0 o lo que prefieras
 
     # Comparar cada entrada de datos1 con valores_unicos y obtener el valor de veces si existe
     for dato in datosCHIS:
@@ -427,12 +1118,12 @@ def generar_pdf(request):
         veces = valores_duplicados1year.get(clave)  # Buscar en el diccionario
         if veces is not None:
             # print(veces)
-            resultados.append({**dato, 'veces': veces + 1})
+            reincidentesOR.append({**dato, 'veces': veces + 1})
         else:
-            resultados.append({**dato, 'veces': 1})  # Si no existe, agregar 'veces': 0 o lo que prefieras
+            reincidentesOR.append({**dato, 'veces': 1})  # Si no existe, agregar 'veces': 0 o lo que prefieras
 
     #  Se generan los tablas de las oficinas para agrupar
-    reincidentes_oficina = Counter(d["oficinaRepre"] for d in resultados)
+    reincidentes_oficina = Counter(d["oficinaRepre"] for d in reincidentesOR)
     nuevos_oficina = Counter(d["oficinaRepre"] for d in rescatesNuevos)
 
     conteo_reincidentes = {
@@ -464,11 +1155,6 @@ def generar_pdf(request):
         total_aux = conteo_reincidentes[nombre]['total_reincidentes'] + conteo_reincidentes[nombre]['total_nuevos']
         conteo_reincidentes[nombre]["total"] = total_aux
         conteo_reincidentes['Total']["total"] = total_aux
-
-    # print(conteo_por_oficina)
-    # conteo = len(resultados)
-
-    # print(resultados)
 
     # -------------- Datos 3: Tercera tabla ------------------
     # print("llego 3ra tabla")
@@ -502,11 +1188,11 @@ def generar_pdf(request):
 
     # -------------- Datos 4: Cuarta tabla ------------------
 
-    nacionalidades_reinc = {d["nacionalidad"] for d in resultados}
+    nacionalidades_reinc = {d["nacionalidad"] for d in reincidentesOR}
 
     reincidentes_datos_nacio = {nacionalidad: {"H_AS": 0, "M_AS": 0, "H_mS": 0, "M_mS": 0, "H_AA": 0, "M_AA": 0, "H_mA": 0, "M_mA": 0, 'total':0 } for nacionalidad in nacionalidades_reinc}
 
-    for d in resultados:
+    for d in reincidentesOR:
         reincidentes_datos_nacio[d["nacionalidad"]]["total"] += 1
 
         if d['sexo'] == True and d['edad'] >= 18 and (d['numFamilia'] is None or d['numFamilia'] == 0):
@@ -527,31 +1213,6 @@ def generar_pdf(request):
             reincidentes_datos_nacio[d["nacionalidad"]]["M_mA"] += 1
         else:
             print(d)
-
-    # nuevos_nacionalidades = Counter(d["nacionalidad"] for d in rescatesNuevos)
-
-    # rescates_por_nacionalidad = RescatePunto.objects.filter(fecha__in= array_fechasDia)\
-    #     .values("nacionalidad")\
-    #     .annotate(
-    #         total=Count('idRescate'),
-    #         H_S=Count('idRescate', filter=Q(edad__gte=18, sexo=True)),
-    #         M_S=Count('idRescate', filter=Q(edad__gte=18, sexo=False)),
-    #         H_mS=Count('idRescate', filter=Q(edad__lt=18, sexo=True)),
-    #         M_mS=Count('idRescate', filter=Q(edad__lt=18, sexo=False)),
-    #         ) \
-    #     .order_by('nacionalidad')
-    
-    # print(rescates_por_nacionalidad)
-
-    # rescates_aereos = rescates_por_dia.filter(aeropuerto=True)\
-    #     .values("oficinaRepre")\
-    #     .annotate(conteo=Count('idRescate'))\
-    #     .order_by('oficinaRepre')
-
-    # for dato in rescates_aereos:
-    #     conteo_rescates_aero[dato["oficinaRepre"]]["conteo"] = dato["conteo"]
-    
-    # rescates_aereos = [[clave, valor['conteo']] for clave, valor in conteo_rescates_aero.items()]
 
     
     # Crear el contexto con los datos
@@ -588,7 +1249,7 @@ def generar_pdf_ceco(request):
 
     fechaIN = fechaB.strftime("%d-%m-%y")
 
-    types_ORS = [
+    ORs_CECO_ = [
         "CAMPECHE",
         "CHIAPAS",
         "HIDALGO",
@@ -609,7 +1270,7 @@ def generar_pdf_ceco(request):
         .order_by("oficinaRepre", 'puntoEstra')
     
 
-    conteo_oficina = { nombre: {} for nombre in types_ORS }
+    conteo_oficina = { nombre: {} for nombre in ORs_CECO_ }
 
     for dato in rescates_or_punto:
         puntoE = dato["puntoEstra"]
@@ -625,7 +1286,7 @@ def generar_pdf_ceco(request):
         .values("oficinaRepre", 'nacionalidad', 'sexo', 'edad', 'numFamilia')\
         .order_by("oficinaRepre", 'nacionalidad')
     
-    conteo_nacionalidad = { nombre: {} for nombre in types_ORS }
+    conteo_nacionalidad = { nombre: {} for nombre in ORs_CECO_ }
 
     for d in rescates_or_nacionalidad:
         # print(d)
@@ -740,14 +1401,14 @@ def generar_cuadro_diario(request):
     }
 
 
-    resultados = []
+    reincidentesOR = []
     rescatesNuevos = []
     for dato in datosORs:
         clave = (dato['nombre'], dato['apellidos'], dato['nacionalidad'])
         veces = valores_duplicados1year.get(clave)  # Buscar en el diccionario
         if veces is not None:
             # print(veces)
-            resultados.append({**dato, 'veces': veces})
+            reincidentesOR.append({**dato, 'veces': veces})
         else:
             rescatesNuevos.append({**dato, 'veces': 0})
 
@@ -756,16 +1417,16 @@ def generar_cuadro_diario(request):
         veces = valores_duplicados1year.get(clave)  # Buscar en el diccionario
         if veces is not None:
             # print(veces)
-            resultados.append({**dato, 'veces': veces + 1})
+            reincidentesOR.append({**dato, 'veces': veces + 1})
         else:
-            resultados.append({**dato, 'veces': 1})  # Si no existe, agregar 'veces': 0 o lo que prefieras
+            reincidentesOR.append({**dato, 'veces': 1})  # Si no existe, agregar 'veces': 0 o lo que prefieras
 
     total_Inadm = RescatePunto.objects.filter(fecha__in=array_fechasDia, aeropuerto=False, carretero=False, 
                 casaSeguridad=False, centralAutobus=False, ferrocarril=False, hotel=False, 
                 puestosADispo=False, voluntarios=False, otro=False ) \
         .count()
     
-    conteoReinci = len(resultados)
+    conteoReinci = len(reincidentesOR)
     conteoNuevos = len(rescatesNuevos)
 
     total_Rescates = conteoReinci + total_Inadm + conteoNuevos 

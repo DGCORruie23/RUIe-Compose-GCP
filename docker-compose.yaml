@@ -15,7 +15,7 @@ services:
       - ./static_volume:/src/backendRUIe/static
       - ./media_volume:/src/backendRUIe/media
       - ./test_files:/src/backendRUIe/test_files
-      # - ./RUIeServer/estadistica:/src/backendRUIe/estadistica
+      - ./RUIeServer/estadistica:/src/backendRUIe/estadistica
 
   db:
     container_name: dbPGruie
@@ -30,7 +30,7 @@ services:
   nginx:
     container_name: RuieNginx
     build: ./nginx
-    restart: always
+    # restart: always
     expose:
       - 80
     ports:

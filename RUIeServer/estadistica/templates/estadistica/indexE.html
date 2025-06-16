@@ -38,7 +38,7 @@
             {% comment %} <h2 class="text-xxl font-semibold">Seleccione Intervalo de tiempo de busqueda:</h2> {% endcomment %}
             <br>
             <center>
-                <form method="POST" id="form-fecha1" action="{% url 'generar_pdf' %}" enctype="multipart/form-data">{% csrf_token %}
+                <form method="POST" id="form-fecha1" action="{% url 'generar_pdfT' %}" enctype="multipart/form-data">{% csrf_token %}
                     <label class="font-semibold text-inm-verde-100">Fecha de Reporte</label>
                     <input type="date" name="fechaI" id="id_fechaI" value="{{ hoy }}">
                     <label class="font-semibold text-inm-verde-100">Retornos </label>
