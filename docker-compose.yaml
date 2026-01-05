@@ -43,8 +43,8 @@ services:
       - ./static_volume:/src/backendRUIe/static
       - ./media_volume:/src/backendRUIe/media
     environment:
-      - VIRTUAL_HOST=ruie25.dgcor.com, www.ruie25.dgcor.com
-      - LETSENCRYPT_HOST=ruie25.dgcor.com, www.ruie25.dgcor.com
+      - VIRTUAL_HOST=ruie2025.dgcor.com, www.ruie2025.dgcor.com
+      - LETSENCRYPT_HOST=ruie2025.dgcor.com, www.ruie2025.dgcor.com
       - LETSENCRYPT_EMAIL=dgcor.rui23@gmail.com
 
   nginx-proxy:
