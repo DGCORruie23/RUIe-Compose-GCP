@@ -367,7 +367,7 @@
                     // console.log(response.data[0].resultados);
 
                     if (response.data.length > 0) {
-                        infoExcel = response.data[0].resultados;
+                        infoExcel = response.data[0].reincidentesOR;
                         resultados.append('Reincidentes: ');
                         resultados.append((response.data[0].conteo).toLocaleString());
                         resultados.append('<br>');
@@ -426,7 +426,7 @@
                     // console.log(response.data[0].resultados);
 
                     if (response.data.length > 0) {
-                        infoExcel1 = response.data[0].resultados;
+                        infoExcel1 = response.data[0].reincidentesOR;
                         resultados.append('Reincidentes: ');
                         resultados.append((response.data[0].conteo).toLocaleString());
                         resultados.append('<br>');
