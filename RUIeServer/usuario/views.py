@@ -6,7 +6,7 @@ from django.http import JsonResponse, HttpResponseRedirect, HttpResponse
 from django.contrib.auth.hashers import make_password, check_password
 from .serializers import UserGetSerializer, UserGetSerializerC, PaisesGetSerializer, EstadoFuerzaGetSerializer, FrasesGetSerializer, ListRescatePuntoSerializer, RescatePuntoSerializer
 from .serializers import MunicipiosGetSerializer, PuntosInterGetSerializer, ConteoRapidoSerializer, MsgUpdateGetSerializer, ConteoDisuadidosSerializer
-from .models import Usuario, Paises, EstadoFuerza, Frases, Municipios, PuntosInternacion, RescatePunto, ConteoRapidoPunto, MsgUpdate
+from .models import Usuario, Paises, EstadoFuerza, Frases, Municipios, PuntosInternacion, RescatePunto, ConteoRapidoPunto, MsgUpdate, Inadmitido
 from .forms import CargarArchivoForm, ExcelForm, ExcelFormOr, ExcelFormOrs 
 import openpyxl as opxl
 from openpyxl.writer.excel import save_virtual_workbook
@@ -16,10 +16,6 @@ from django.conf import settings
 import os
 
 # Create your views here.
-
-def detail(request, question_id):
-  question = Question.objects.get(pk=question_id)
-  
 @csrf_exempt
 def login_user(request):
 
@@ -134,11 +130,6 @@ def cargarPais(request):
         form = CargarArchivoForm()
     return render(request, "cargarExcel/cargarArchivoPaises.html", {"form" : form})
 
-
-
-
-            
-
 @csrf_exempt
 def cargarPuntoI(request):
     if(request.method == "POST"):
@@ -192,7 +183,6 @@ def cargarPuntoI(request):
     else:
         form = CargarArchivoForm()
     return render(request, "cargarExcel/cargarArchivoPuntosInter.html", {"form" : form})
-
 
 
 @csrf_exempt
@@ -251,8 +241,6 @@ def cargarEdoFuerza(request):
                         i+=1
                 #-----------------------------------
 
-                
-
                 #Verificar si la lista esta vacia para no guardar información
                 if(bool(edoFuerza)):
 
@@ -302,9 +290,6 @@ def cargarEdoFuerza(request):
     else:
         form = CargarArchivoForm()
     return render(request, "cargarExcel/cargarArchivoFuerza.html", {"form" : form})
-
-
-
 
 
 @csrf_exempt
@@ -420,8 +405,6 @@ def cargarMunicipios(request):
                         i+=1
                 #-----------------------------------
 
-                
-
                 #Verificar si la lista esta vacia para no guardar información
                 if(bool(municipio)):
 
@@ -467,7 +450,74 @@ def cargarMunicipios(request):
         form = CargarArchivoForm()
     return render(request, "cargarExcel/cargarArchivoMunicipios.html", {"form" : form})
 
+@csrf_exempt
+def cargarInadmitidos(request):
+    if(request.method == "POST"):
+        form = CargarArchivoForm(request.POST, request.FILES)
+        if(form.is_valid()):
+            # Nota: "archivo" este campo se llama como se llama en el form  
+            excel_file = request.FILES["archivo"]
+            nombreA = str(excel_file.name)
+            extensionA = (nombreA.split(".")[-1]).lower()
+            # print((nombreA.split(".")[-1]).lower())
+            if( extensionA == "xlsx" 
+               or extensionA == ".xlsm" 
+               or extensionA == ".xlsb" 
+               or extensionA == ".xltx" 
+               or extensionA == ".xltm" 
+               or extensionA == ".xls"):
+                dataWB = opxl.load_workbook(excel_file, data_only=True)
 
+                data = dataWB.worksheets[0]
+
+                # print(data.cell(4,2).value)
+
+                # Se leen los datos del excel
+                municipio = []
+                auxL = []
+            
+                i = 1
+                # dataInad = {}
+                oficina = ""
+                puntoIn = ""
+                fecha = datetime.strptime("2024/02/02", "%Y/%m/%d").date()
+                nacionalidad = ""
+                while not(i == 0):
+                    if(data.cell(i, 1).value == None):
+                        i = -1
+                        # print(edoFuerza)
+                    elif(data.cell( i, 2).value != None) and (data.cell( i, 3).value == None):
+                        puntoIn = str(data.cell( i, 1).value).upper()
+                        oficina = str(data.cell( i, 2).value).upper()
+                        # dataInad[oficina] = { puntoIn: {}}
+                        if(data.cell( i, 7).value != None):
+                            fechaEx = data.cell( i, 7).value
+                            # print("fecha excel",fechaEx)
+                            # i = 0
+                            fecha = datetime.strptime(str(fechaEx), "%Y-%m-%d %H:%M:%S").date()
+                    else:
+                        nacionalidad = str(data.cell(i, 1).value).upper()
+                        ha=int(data.cell(i, 2).value)
+                        ma=int(data.cell(i, 3).value) 
+                        hma=int(data.cell(i, 4).value) 
+                        mma=int(data.cell(i, 5).value)
+                        total=int(data.cell(i, 6).value)
+
+                        if (((nacionalidad != None) and (nacionalidad!="")) and (ha != None) and (ma != None)
+                            and (hma != None) and (mma != None)):
+                            Inadmitido.objects.create(fecha= fecha, oficina= oficina, puntoInter= puntoIn,
+                                           nac= nacionalidad,
+                                           hs= ha, ms= ma, ha= hma, ma= mma,total= total)
+
+                        # nac = str(data.cell(i, 2).value).upper()
+                        # dataInad[oficina][puntoIn][nac] = {
+                        #     "HA": int(data.cell(i, 3).value), "MA": int(data.cell(i, 4).value), 
+                        #     "HM": int(data.cell(i, 5).value), "MM": int(data.cell(i, 6).value), 
+                        #     "total": int(data.cell(i, 7).value)
+                        #     }
+                    i+=1
+                
+    return redirect("dashboard")
 
 @csrf_exempt
 def cargaMasivaUser(request):
@@ -551,7 +601,6 @@ def cargaMasivaUser(request):
 
 @csrf_exempt
 def insert_rescates(request):
-
     if request.method == 'POST':
         datos_recibidos = JSONParser().parse(request)
         datos_serializados = RescatePuntoSerializer(data=datos_recibidos, many=True)
@@ -666,8 +715,6 @@ def convertirU(coordenadas):
     lat = float("0.0")
     lon = float("0.0")
     return strCoor, lat, lon
-
-
 
 
 @csrf_exempt
@@ -1073,10 +1120,6 @@ def generarExcelORs(request):
         return render(request, "base/error404.html")
 
 
-
-
-
-
 @login_required
 @csrf_exempt
 def generarExcelEdoFuerza(request):
@@ -1107,7 +1150,6 @@ def generarExcelEdoFuerza(request):
                                             valor.seccion
                                             ])
                 
-
                     response = HttpResponse(content = save_virtual_workbook(workbook), content_type='application/vnd.ms-excel.sheet.macroEnabled.12')
                     response['Content-Disposition'] = 'attachment; filename=EdoFuerza.xlsm'
 
@@ -1116,15 +1158,11 @@ def generarExcelEdoFuerza(request):
 
             print("no")
             
-    
     else:
         return render(request, "base/error404.html")
 
 
-
-
 @login_required
-
 @csrf_exempt
 def generarExcelUsuarios(request):
     if(request.method == "POST"):
@@ -1229,10 +1267,7 @@ def generarExcelUsuarios(request):
         return render(request, "base/error404.html")
 
 
-
-
 @login_required
-
 @csrf_exempt
 def generarExcelPuntosI(request):
     if(request.method == "POST"):

@@ -478,7 +478,6 @@ def agregar_puntoInternacion(request):
 @login_required
 
 def editar_puntoInternacion(request, id_puntoI):
-    
 
     puntoI = PuntosInternacion.objects.get(idPuntoInter = id_puntoI)
 

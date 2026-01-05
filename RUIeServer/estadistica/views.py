@@ -4,6 +4,7 @@ from django.db.models import Count, Q
 from django.template.loader import get_template
 from django.contrib.auth.decorators import login_required
 from collections import Counter
+from django.views.decorators.csrf import csrf_exempt
 
 from usuarioL.models import usuarioL
 from usuario.models import RescatePunto, EstadoFuerza, PuntosInternacion, Municipios, Paises, Usuario
@@ -285,7 +286,7 @@ def buscar_reincidente_ajax(request):
     
     return JsonResponse({'error': 'Petición inválida'}, status=400)
 
-
+@csrf_exempt
 @login_required
 def generar_pdfT(request):
 
@@ -1061,8 +1062,6 @@ def generar_pdf(request):
             conteo_rescates["Total"]["total_puestos"] += f_aux
             conteo_rescates["Total"]["total_otros"] += g_aux
 
-
-
     # -------------- Datos segunda tabla ------------------
 
     fechaIN = fechaB
@@ -1513,9 +1512,3 @@ def generar_cuadro_diario(request):
     response = HttpResponse(pdf_file, content_type="application/pdf")
     response["Content-Disposition"] = 'inline; filename="cuadro_datos.pdf"'
     return response
-
-
-@login_required
-def reporte_completo_diario(request):
-
-    pass

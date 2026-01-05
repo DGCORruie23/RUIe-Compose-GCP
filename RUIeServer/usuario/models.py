@@ -118,6 +118,23 @@ class PuntosInternacion(models.Model):
             estadoPunto = self.estadoPunto, 
             tipoPunto = self.tipoPunto)
 
+class Inadmitido(models.Model):
+    fecha = models.DateField()
+    oficina = models.CharField(max_length=50)
+    puntoInter = models.CharField(max_length=100, verbose_name="Punto de Internación")
+    nac = models.CharField(max_length=100, verbose_name="Nacionalidad")
+    hs = models.IntegerField(verbose_name="Hombre(s) Adulto(s)")
+    ms = models.IntegerField(verbose_name="Mujer(es) Adulta(s)")
+    ha = models.IntegerField(verbose_name="Hombre(s) Menor(es)")
+    ma = models.IntegerField(verbose_name="Mujer(es) Menor(es)")
+    total = models.IntegerField()
+
+    def __str__(self):
+        return "{fecha}: {puntoInter}-{total}-->[{nac}={hs},{ms},{ha},{ma}]".format(
+            fecha = self.fecha, puntoInter = self.puntoInter, 
+            nac = self.nac, 
+            hs = self.hs, ms = self.ms, ha = self.ha, ma = self.ma,
+            total=self.total)
 
 class EstadoFuerza(models.Model):
     idEdoFuerza = models.AutoField(primary_key=True)

@@ -32,32 +32,8 @@ urlpatterns = [
     path('log-in/', viewsL.LoginView.as_view(template_name= 'base/log_in.html'), name='log-in'),
     path('log-out', viewsL.LogoutView.as_view(), name="logout" ),
 
-    path('login/', include('usuario.urls')),
-    path('info/cargarPais', views.cargarPais, name="cargar_pais"),
-    path('info/cargarFuerza', views.cargarEdoFuerza, name="cargar_fuerza"),
-    #path('dashboard/', views.cargarEdoF, name="cargar_f"),
-    path('info/cargarMunicipios', views.cargarMunicipios, name="cargar_municipios"),
-    path('info/cargarPuntosI', views.cargarPuntoI, name="cargar_puntoI"),
-    path('cargar/Usuarios', views.cargaMasivaUser, name="cargar_usuarios"),
-    path('info/Paises', views.infoPaises),
-    path('info/Fuerza', views.infoEstadoFuerza),
-    path('info/Municipios', views.infoMunicipios),
-    path('info/PuntosI', views.infoPuntosInterna),
-    path('info/frases', views.infoFrases),
-    path('info/descargaN', views.generarExcelNombres),
-    path('info/descargaC', views.generarExcelConteo),
-    path('info/descargaD', views.pagDuplicados),
-    path('info/fechas', views.generarExcelFechas, name="fechas_descarga"),
-    path('info/fechasOR', views.generarExcelFechasOR, name="fechas_OR"),
-    path('info/descargaD_a', views.downloadDuplicados, name="descarga_duplicados"),
-    path('info/descargaTab22', views.generarExcelTab),
-    path('info/descargaExcel', views.generarExcelORs, name="descarga_excel"),
-    path('info/descargaExcelUsuarios', views.generarExcelUsuarios, name="descarga_excelUsuarios"),
-    path('info/descargaExcelEdoFuerza', views.generarExcelEdoFuerza, name="descarga_excelEdoFuerza"),
-    path('info/descargaExcelPuntosI', views.generarExcelPuntosI, name="descarga_excelPuntosI"),
-    path('info/updateApp', views.msgUpdateUrl, name="info_app"),
-
-    path('info/politica_privacidad', views.politica_privacidad, name="info_politica_privacidad"),
+    path('login/validar/', views.login_user),
+    path('info/', include('usuario.urls')),
 
     path('registro/insertR', views.insert_rescates),
     path('registro/insertC', views.insert_conteo),
@@ -66,16 +42,7 @@ urlpatterns = [
     path('descargas/apk', views.downloadAPK, name="descarga_android"),
 
     path('estadistica/', include('estadistica.urls')),
-
-    # path('info/pruebas/edoFuerza', viewsDash.edoFuerza, name="pagina_pruebas_edoFuerza"),
     # path('info/pruebas/edoFuerza/editarEdoFuerza/<int:id_edo_fuerza>', viewsDash.editar_estado_fuerza, name='editar_estado_fuerza'),
-    # path('info/pruebas/edoFuerza/eliminarEdoFuerza/<int:id_edo_fuerza>', viewsDash.eliminarEdoFuerza, name='eliminar_estado_fuerza'),
-    # path('info/pruebas/edoFuerza/anadirPunto', viewsDash.agregar_punto, name='agregar_punto'),
-
-
-    # path('info/pruebas/usuarios', viewsDash.Usuarios, name="pagina_pruebas_usuarios"),
-    # path('info/pruebas/usuarios/editarUsuario/<int:id_usuario>', viewsDash.editar_usuario, name='editar_usuario'),
-    # path('info/pruebas/usuarios/anadirUsuario', viewsDash.agregar_usuario, name='agregar_usuario'),
     # path('info/pruebas/usuarios/eliminarUsuario/<int:id_usuario>', viewsDash.eliminarUsuario, name='eliminar_usuario'),
 ]
 

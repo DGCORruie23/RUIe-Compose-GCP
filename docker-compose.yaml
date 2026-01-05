@@ -16,6 +16,8 @@ services:
       - ./media_volume:/src/backendRUIe/media
       - ./test_files:/src/backendRUIe/test_files
       - ./RUIeServer/estadistica:/src/backendRUIe/estadistica
+      - ./RUIeServer/dashboard:/src/backendRUIe/dashboard
+      - ./RUIeServer/usuario:/src/backendRUIe/usuario
 
   db:
     container_name: dbPGruie
@@ -41,8 +43,8 @@ services:
       - ./static_volume:/src/backendRUIe/static
       - ./media_volume:/src/backendRUIe/media
     environment:
-      - VIRTUAL_HOST=ruie.dgcor.com, www.ruie.dgcor.com
-      - LETSENCRYPT_HOST=ruie.dgcor.com, www.ruie.dgcor.com
+      - VIRTUAL_HOST=ruie25.dgcor.com, www.ruie25.dgcor.com
+      - LETSENCRYPT_HOST=ruie25.dgcor.com, www.ruie25.dgcor.com
       - LETSENCRYPT_EMAIL=dgcor.rui23@gmail.com
 
   nginx-proxy:
