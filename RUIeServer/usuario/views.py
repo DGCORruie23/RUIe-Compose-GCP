@@ -476,45 +476,56 @@ def cargarInadmitidos(request):
                 municipio = []
                 auxL = []
             
-                i = 1
+                i = 2
                 # dataInad = {}
                 oficina = ""
                 puntoIn = ""
-                fecha = datetime.strptime("2024/02/02", "%Y/%m/%d").date()
+                fecha_hora = datetime.strptime("2024/02/02", "%Y/%m/%d").date()
                 nacionalidad = ""
+                nombre = ""
                 while not(i == 0):
-                    if(data.cell(i, 1).value == None):
-                        i = -1
+                    if(data.cell(i, 1).value == None or data.cell( i, 2).value == None):
+                        i = 0
+                        break
                         # print(edoFuerza)
-                    elif(data.cell( i, 2).value != None) and (data.cell( i, 3).value == None):
-                        puntoIn = str(data.cell( i, 1).value).upper()
-                        oficina = str(data.cell( i, 2).value).upper()
-                        # dataInad[oficina] = { puntoIn: {}}
-                        if(data.cell( i, 7).value != None):
-                            fechaEx = data.cell( i, 7).value
-                            # print("fecha excel",fechaEx)
-                            # i = 0
-                            fecha = datetime.strptime(str(fechaEx), "%Y-%m-%d %H:%M:%S").date()
                     else:
-                        nacionalidad = str(data.cell(i, 1).value).upper()
-                        ha=int(data.cell(i, 2).value)
-                        ma=int(data.cell(i, 3).value) 
-                        hma=int(data.cell(i, 4).value) 
-                        mma=int(data.cell(i, 5).value)
-                        total=int(data.cell(i, 6).value)
+                        print("i: ", i)
+                        oficina = str(data.cell( i, 1).value).upper()
+                        fecha_excel = str(data.cell( i, 2).value)
+                        hora_excel = str(data.cell( i, 3).value)
+                        fecha = datetime.strptime(fecha_excel, "%Y-%m-%d %H:%M:%S").date()
+                        hora = datetime.strptime(hora_excel, "%H:%M:%S").time()
 
-                        if (((nacionalidad != None) and (nacionalidad!="")) and (ha != None) and (ma != None)
-                            and (hma != None) and (mma != None)):
-                            Inadmitido.objects.create(fecha= fecha, oficina= oficina, puntoInter= puntoIn,
-                                           nac= nacionalidad,
-                                           hs= ha, ms= ma, ha= hma, ma= mma,total= total)
+                        fecha_hora = datetime.combine(fecha, hora)
 
-                        # nac = str(data.cell(i, 2).value).upper()
-                        # dataInad[oficina][puntoIn][nac] = {
-                        #     "HA": int(data.cell(i, 3).value), "MA": int(data.cell(i, 4).value), 
-                        #     "HM": int(data.cell(i, 5).value), "MM": int(data.cell(i, 6).value), 
-                        #     "total": int(data.cell(i, 7).value)
-                        #     }
+                        puntoIn = str(data.cell( i, 4).value).upper()
+                        nacionalidad = str(data.cell(i, 5).value).upper()
+                        nombre = str(data.cell(i, 6).value).upper()
+
+                        valor_excel = str(data.cell(i, 7).value)
+                        nacimiento = datetime.strptime(valor_excel, "%Y-%m-%d %H:%M:%S").date()
+                        genero = "H" if(str(data.cell(i, 8).value).upper() == "H") else "M"
+                        edad = int(data.cell(i, 9).value)
+
+                        if( (oficina != None or oficina != "") and 
+                            (fecha_hora != None or fecha_hora != "") and 
+                            (puntoIn != None or puntoIn != "") and 
+                            (nacionalidad != None or nacionalidad != "") and 
+                            (nombre != None or nombre != "") and 
+                            (nacimiento != None or nacimiento != "") and 
+                            (genero != None or genero != "") and 
+                            (edad != None or edad != "")):
+                            Inadmitido.objects.create(
+                            fecha_hora= fecha_hora,
+                            oficina= oficina,
+                            puntoInter= puntoIn,
+                            nac= nacionalidad,
+                            nombreCompleto= nombre,
+                            nacimiento= nacimiento,
+                            genero= genero,
+                            edad= edad
+                            )
+
                     i+=1
                 
     return redirect("dashboard")

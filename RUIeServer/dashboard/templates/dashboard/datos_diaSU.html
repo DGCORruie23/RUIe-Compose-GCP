@@ -1,58 +1,67 @@
 {% extends "base/base.html" %}
 
 {% block title %}
-    {% comment %} {% for user in usuario %}
-        Dashboard de {{user.oficinaR}}
-    {% endfor %}  {% endcomment %}
-    Dashboard de {{usuario.0.oficinaR}}
+{% comment %} {% for user in usuario %}
+Dashboard de {{user.oficinaR}}
+{% endfor %} {% endcomment %}
+Dashboard de {{usuario.0.oficinaR}}
 {% endblock title %}
 
 {% block navigation %}
-    Panel de Control de Administrador
+Panel de Control de Administrador
 {% endblock navigation %}
 
 {% block linkSuperior %}
 {% comment %} <form action="." method="post">
     {% csrf_token %}
-        <input name="username" type="hidden">
-        <input name="password" type="hidden">
-    <button type="submit" class="py-4 px-6 bg-blue-400 rounded-xl text-white hover:text-inm-verde-100">Descargar</button>
+    <input name="username" type="hidden">
+    <input name="password" type="hidden">
+    <button type="submit"
+        class="py-4 px-6 bg-blue-400 rounded-xl text-white hover:text-inm-verde-100">Descargar</button>
 </form> {% endcomment %}
-{% comment %} <a href="{% url 'descargas' %}" class="py-4 px-6 bg-blue-400 rounded-xl text-white hover:text-inm-verde-100">Descargas</a>            {% endcomment %}
+{% comment %} <a href="{% url 'descargas' %}"
+    class="py-4 px-6 bg-blue-400 rounded-xl text-white hover:text-inm-verde-100">Descargas</a> {% endcomment %}
 {% endblock linkSuperior %}
 
 
 {% block content %}
-    {% comment %} <h1 class="text-xl">Dashboard de {{usuario.0.oficinaR}} </h1> {% endcomment %}
+{% comment %} <h1 class="text-xl">Dashboard de {{usuario.0.oficinaR}} </h1> {% endcomment %}
 
-    <div class="py-2 flex flex-row center">
-        <input class="px-2 rounded border-2 border-inm-marron-100 text-inm-cafe-200 text-sm text-center mx-3" type="text" id="myInputAG" onkeyup="myFunction(5, 'myInputAG')" placeholder="Buscar por Agente" name="filtro_Agente">
+<div class="py-2 flex flex-row center">
+    <input class="px-2 rounded border-2 border-inm-marron-100 text-inm-cafe-200 text-sm text-center mx-3" type="text"
+        id="myInputAG" onkeyup="myFunction(5, 'myInputAG')" placeholder="Buscar por Agente" name="filtro_Agente">
 
-        <input class="px-2 rounded border-2 border-inm-marron-100 text-inm-cafe-200 text-sm text-center mx-3" type="text" id="myInputOR" onkeyup="myFunction(2, 'myInputOR')" placeholder="Buscar por Oficina" name="filtro_OR">
+    <input class="px-2 rounded border-2 border-inm-marron-100 text-inm-cafe-200 text-sm text-center mx-3" type="text"
+        id="myInputOR" onkeyup="myFunction(2, 'myInputOR')" placeholder="Buscar por Oficina" name="filtro_OR">
 
-        <input class="px-2 rounded border-2 border-inm-marron-100 text-inm-cafe-200 text-sm text-center mx-3" type="text" id="myInputHRS" onkeyup="myFunction(4, 'myInputHRS')" placeholder="Buscar por Hora" name="filtro_hora">
+    <input class="px-2 rounded border-2 border-inm-marron-100 text-inm-cafe-200 text-sm text-center mx-3" type="text"
+        id="myInputHRS" onkeyup="myFunction(4, 'myInputHRS')" placeholder="Buscar por Hora" name="filtro_hora">
 
-        <input class="px-2 rounded border-2 border-inm-marron-100 text-inm-cafe-200 text-sm text-center mx-3" type="text" id="myInputP" onkeyup="myFunction(7, 'myInputP')" placeholder="Buscar por Punto" name="filtro_punto">
+    <input class="px-2 rounded border-2 border-inm-marron-100 text-inm-cafe-200 text-sm text-center mx-3" type="text"
+        id="myInputP" onkeyup="myFunction(7, 'myInputP')" placeholder="Buscar por Punto" name="filtro_punto">
 
-        <input class="px-2 rounded border-2 border-inm-marron-100 text-inm-cafe-200 text-sm text-center mx-3" type="text" id="myInputNac" onkeyup="myFunction(8, 'myInputNac')" placeholder="Buscar por Nacionalidad" name="filtro_nacio">
+    <input class="px-2 rounded border-2 border-inm-marron-100 text-inm-cafe-200 text-sm text-center mx-3" type="text"
+        id="myInputNac" onkeyup="myFunction(8, 'myInputNac')" placeholder="Buscar por Nacionalidad" name="filtro_nacio">
 
-        <label class="px-2 py-2 mx-3 text-inm-rojo-200" id="totales"></label>
+    <label class="px-2 py-2 mx-3 text-inm-rojo-200" id="totales"></label>
 
-        <form action="{% url 'descarga_excel' %}" method="post">
-            {% csrf_token %}
-                <input name="fechaDescarga" type="hidden" value="{{fecha_P}}" id="id_fechaDescarga">
-                <input name="oficina" type="hidden" value="{{usuario.0.oficinaR}}" id="id_oficina">
-            <button type="submit" class="py-2 px-6 bg-blue-400 rounded-xl text-white hover:text-inm-verde-100">Descargar</button>
-        </form>
-    </div>
-
-    <form method="post" action="{% url 'eliminar_varios_registros' %}">
+    <form action="{% url 'descarga_excel' %}" method="post">
         {% csrf_token %}
-        <input class="py-1 px-2 bg-inm-rojo-300 rounded-xl text-sm text-white hover:bg-inm-rojo-100" type="submit" value="Eliminar">
-    <table id="myTable" class="border-separate border border-slate-200 hover:table-fixed" >
+        <input name="fechaDescarga" type="hidden" value="{{fecha_P}}" id="id_fechaDescarga">
+        <input name="oficina" type="hidden" value="{{usuario.0.oficinaR}}" id="id_oficina">
+        <button type="submit"
+            class="py-2 px-6 bg-blue-400 rounded-xl text-white hover:text-inm-verde-100">Descargar</button>
+    </form>
+</div>
+
+<form method="post" action="{% url 'eliminar_varios_registros' %}" id="formEliminar">
+    {% csrf_token %}
+    <input class="py-1 px-2 bg-inm-rojo-300 rounded-xl text-sm text-white hover:bg-inm-rojo-100" type="button"
+        value="Eliminar" onclick="mostrarModal()">
+    <table id="myTable" class="border-separate border border-slate-200 hover:table-fixed">
         <thead class="bg-inm-cafe-100 text-white">
             <tr>
-                <th class="border border-slate-300"><input type="checkbox" id="cboxAll"/></th>
+                <th class="border border-slate-300"><input type="checkbox" id="cboxAll" /></th>
                 <th class="border border-slate-300">#</th>
                 <th class="border border-slate-300 px-3 text-sm">Oficina</th>
                 <th class="border border-slate-300 px-3 text-sm">Fecha</th>
@@ -87,7 +96,9 @@
         <tbody class="bg-gray-200">
             {% for val in values %}
             <tr>
-                <td class="text-xs text-center"><input type="checkbox" id="cbox{{val.idRescate}}" name="registros_seleccionados" value="{{val.idRescate}}" class="checkbox" onClick="checkALLT(this)" /></td>
+                <td class="text-xs text-center"><input type="checkbox" id="cbox{{val.idRescate}}"
+                        name="registros_seleccionados" value="{{val.idRescate}}" class="checkbox"
+                        onClick="checkALLT(this)" /></td>
                 <td class="text-xs text-center">{{ forloop.counter }}</td>
                 <td class="text-xs text-center">{{val.oficinaRepre}}</td>
                 <td class="text-xs text-center">{{val.fecha}}</td>
@@ -95,23 +106,23 @@
                 <td class="text-xs text-center">{{val.nombreAgente}}</td>
 
                 {% if val.aeropuerto == True %}
-                    <td class="text-xs text-center">Aeropuerto</td>
+                <td class="text-xs text-center">Aeropuerto</td>
                 {% elif val.carretero == True %}
-                    <td class="text-xs text-center">Carretero</td>
+                <td class="text-xs text-center">Carretero</td>
                 {% elif val.casaSeguridad == True %}
-                    <td class="text-xs text-center">Disuadidos</td> 
+                <td class="text-xs text-center">Disuadidos</td>
                 {% elif val.centralAutobus == True %}
-                    <td class="text-xs text-center">Central de Autobus</td>  
+                <td class="text-xs text-center">Central de Autobus</td>
                 {% elif val.ferrocarril == True %}
-                    <td class="text-xs text-center">Ferrocarril</td>
+                <td class="text-xs text-center">Ferrocarril</td>
                 {% elif val.hotel == True %}
-                    <td class="text-xs text-center">Visitas de Verificación</td>
+                <td class="text-xs text-center">Visitas de Verificación</td>
                 {% elif val.puestosADispo == True %}
-                    <td class="text-xs text-center">Puestos a Disposición</td>
+                <td class="text-xs text-center">Puestos a Disposición</td>
                 {% elif val.voluntarios == True %}
-                    <td class="text-xs text-center">Voluntarios</td>
+                <td class="text-xs text-center">Voluntarios</td>
                 {% else %}
-                    <td class="text-xs text-center">Otro</td>
+                <td class="text-xs text-center">Otro</td>
                 {% endif %}
                 {% comment %} <th>{{val.aeropuerto}}</th>
                 <th>{{val.carretero}}</th>
@@ -128,7 +139,8 @@
                 <td class="text-xs text-center">{{val.nacionalidad}}</td>
                 <td class="text-xs text-center">{{val.iso3}}</td>
                 <td class="text-xs text-center">{{val.nombre}}</td>
-                <td class="text-xs text-blue-500 text-center"><a href="{% url 'editar' val.idRescate %}">{{val.apellidos}}</a></td>
+                <td class="text-xs text-blue-500 text-center"><a
+                        href="{% url 'editar' val.idRescate %}">{{val.apellidos}}</a></td>
                 <td class="text-xs text-center">{{val.parentesco}}</td>
                 <td class="text-xs text-center">{{val.fechaNacimiento}}</td>
                 <td class="text-xs text-center">{{val.edad}}</td>
@@ -154,61 +166,126 @@
         </tbody>
     </table>
 </form>
-    
 
-    <script>
+<!-- Modal de Confirmación -->
+<div id="modalConfirmacion" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden"
+    style="z-index: 50;">
+    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+        <div class="mt-3 text-center">
+            <h3 class="text-lg leading-6 font-medium text-gray-900">Confirmar Eliminación</h3>
+            <div class="mt-2 px-7 py-3">
+                <p class="text-sm text-gray-500">
+                    ¿Estás seguro de que deseas eliminar los siguientes registros?
+                </p>
+                <ul id="listaRegistros"
+                    class="text-left text-xs text-gray-700 mt-2 list-disc pl-5 max-h-40 overflow-y-auto">
+                    <!-- Aquí se llenarán los datos dinámicamente -->
+                </ul>
+            </div>
+            <div class="items-center px-4 py-3">
+                <button id="btnConfirmar"
+                    class="px-4 py-2 bg-red-500 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-300">
+                    Eliminar
+                </button>
+                <button onclick="cerrarModal()"
+                    class="mt-3 px-4 py-2 bg-gray-300 text-gray-700 text-base font-medium rounded-md w-full shadow-sm hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-300">
+                    Cancelar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 
-        var checkboxSeleccionarTodo = document.getElementById('cboxAll');
-        checkboxSeleccionarTodo.addEventListener('change', function () {
-            
-            if(checkboxSeleccionarTodo.checked === true){
-                var filas = document.querySelectorAll('tbody tr');
-                // console.log(filas)
-                filas.forEach(function (fila) {
-                    if(fila.style.display !== 'none'){
-                        // console.log(fila.cells[0])
-                        var tdCheckbox = fila.cells[0];
-                        // Accede al elemento <input> dentro del <td>
-                        var checkbox = tdCheckbox.querySelector('input.checkbox');
-                        if (checkbox) {
-                        checkbox.checked = true;
-                        }
-                    }
-                });
-            } else{
-                var checkboxes = document.querySelectorAll('.checkbox');
-                // Itera sobre los checkboxes y los marca/desmarca según el estado del checkbox "Seleccionar Todo"
-                checkboxes.forEach(function (checkbox) {
-                    checkbox.checked = checkboxSeleccionarTodo.checked;
-                });
-            }
+
+<script>
+
+    function mostrarModal() {
+        var checkboxes = document.querySelectorAll('input[name="registros_seleccionados"]:checked');
+        var lista = document.getElementById('listaRegistros');
+        lista.innerHTML = ''; // Limpiar lista anterior
+
+        if (checkboxes.length === 0) {
+            alert("Por favor selecciona al menos un registro para eliminar.");
+            return;
+        }
+
+        checkboxes.forEach(function (checkbox) {
+            var fila = checkbox.closest('tr');
+            var id = checkbox.value;
+            var oficina = fila.cells[2].innerText; // Asumiendo que Oficina es la columna 3 (índice 2)
+            var fecha = fila.cells[3].innerText;   // Asumiendo que Fecha es la columna 4 (índice 3)
+            var iso3 = fila.cells[8].innerText;   // Asumiendo que Nombre es la columna 5 (índice 4)
+            var nomM = fila.cells[10].innerText;   // Asumiendo que Nombre es la columna 5 (índice 4)
+            var apeM = fila.cells[11].innerText;   // Asumiendo que Nombre es la columna 5 (índice 4)
+
+            var item = document.createElement('li');
+            item.textContent = `${nomM} ${apeM}${"\n"}${iso3}`;
+            item.style.whiteSpace = "pre-line";
+            lista.appendChild(item);
         });
 
-        function myFunction(x1,idInput) {
-          // Declare variables 
-          var input, filter, table, tr, td, i, txtValue, conteo;
-          input = document.getElementById(idInput);
-          filter = input.value.toUpperCase();
-          table = document.getElementById("myTable");
-          tr = table.getElementsByTagName("tr");
-        
-          conteo = 0
-          // Loop through all table rows, and hide those who don't match the search query
-          for (i = 0; i < tr.length; i++) {
+        document.getElementById('modalConfirmacion').classList.remove('hidden');
+    }
+
+    function cerrarModal() {
+        document.getElementById('modalConfirmacion').classList.add('hidden');
+    }
+
+    document.getElementById('btnConfirmar').addEventListener('click', function () {
+        document.getElementById('formEliminar').submit();
+    });
+
+    var checkboxSeleccionarTodo = document.getElementById('cboxAll');
+    checkboxSeleccionarTodo.addEventListener('change', function () {
+
+        if (checkboxSeleccionarTodo.checked === true) {
+            var filas = document.querySelectorAll('tbody tr');
+            // console.log(filas)
+            filas.forEach(function (fila) {
+                if (fila.style.display !== 'none') {
+                    // console.log(fila.cells[0])
+                    var tdCheckbox = fila.cells[0];
+                    // Accede al elemento <input> dentro del <td>
+                    var checkbox = tdCheckbox.querySelector('input.checkbox');
+                    if (checkbox) {
+                        checkbox.checked = true;
+                    }
+                }
+            });
+        } else {
+            var checkboxes = document.querySelectorAll('.checkbox');
+            // Itera sobre los checkboxes y los marca/desmarca según el estado del checkbox "Seleccionar Todo"
+            checkboxes.forEach(function (checkbox) {
+                checkbox.checked = checkboxSeleccionarTodo.checked;
+            });
+        }
+    });
+
+    function myFunction(x1, idInput) {
+        // Declare variables 
+        var input, filter, table, tr, td, i, txtValue, conteo;
+        input = document.getElementById(idInput);
+        filter = input.value.toUpperCase();
+        table = document.getElementById("myTable");
+        tr = table.getElementsByTagName("tr");
+
+        conteo = 0
+        // Loop through all table rows, and hide those who don't match the search query
+        for (i = 0; i < tr.length; i++) {
             td = tr[i].getElementsByTagName("td")[x1];
             if (td) {
-              txtValue = td.textContent || td.innerText;
-              if (txtValue.toUpperCase().indexOf(filter) > -1) {
-                tr[i].style.display = "";
-                conteo++
-              } else {
-                tr[i].style.display = "none";
-              }
-            } 
-          }
-          
-          document.getElementById("totales").innerHTML = "Registros: " + conteo
+                txtValue = td.textContent || td.innerText;
+                if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                    tr[i].style.display = "";
+                    conteo++
+                } else {
+                    tr[i].style.display = "none";
+                }
+            }
         }
-    </script>
+
+        document.getElementById("totales").innerHTML = "Registros: " + conteo
+    }
+</script>
 
 {% endblock content %}

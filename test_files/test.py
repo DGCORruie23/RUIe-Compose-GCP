@@ -92,3 +92,11 @@ for registro in resultados:
 # Guardar el archivo
 wb.save(ruta_archivo_excel)
 print(f"El archivo Excel ha sido guardado en {ruta_archivo_excel}")
+
+# from usuario.models import Usuario, Paises, EstadoFuerza, Frases, Municipios, PuntosInternacion, RescatePunto
+# from django.db.models.functions import Upper
+# RescatePunto.objects.update(nacionalidad=Upper('nacionalidad'))
+# RescatePunto.objects.update(nombre=Upper('nombre'))
+# RescatePunto.objects.update(apellidos=Upper('apellidos'))
+# RescatePunto.objects.update(nombreAgente=Upper('nombreAgente'))
+# RescatePunto.objects.update(puntoEstra=Upper('puntoEstra'))

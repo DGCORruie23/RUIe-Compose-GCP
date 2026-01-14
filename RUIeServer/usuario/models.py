@@ -119,22 +119,33 @@ class PuntosInternacion(models.Model):
             tipoPunto = self.tipoPunto)
 
 class Inadmitido(models.Model):
-    fecha = models.DateField()
-    oficina = models.CharField(max_length=50)
-    puntoInter = models.CharField(max_length=100, verbose_name="Punto de Internación")
-    nac = models.CharField(max_length=100, verbose_name="Nacionalidad")
-    hs = models.IntegerField(verbose_name="Hombre(s) Adulto(s)")
-    ms = models.IntegerField(verbose_name="Mujer(es) Adulta(s)")
-    ha = models.IntegerField(verbose_name="Hombre(s) Menor(es)")
-    ma = models.IntegerField(verbose_name="Mujer(es) Menor(es)")
-    total = models.IntegerField()
+    GENERO_CHOICES = [
+        ('H', 'Hombre'),
+        ('M', 'Mujer'),
+        ('X', 'No especificado'),
+    ]
+
+    fecha_hora = models.DateTimeField(db_index=True)
+    oficina = models.CharField(max_length=50, db_index=True)
+    puntoInter = models.CharField(max_length=100)
+    nac = models.CharField(max_length=100, db_index=True)
+    nombreCompleto = models.CharField(max_length=250)
+    nacimiento = models.DateField()
+    genero = models.CharField(
+        max_length=1,
+        choices=GENERO_CHOICES,
+        db_index=True,
+        default="X"
+    )
+    edad = models.IntegerField( null=True, verbose_name="Edad")
 
     def __str__(self):
-        return "{fecha}: {puntoInter}-{total}-->[{nac}={hs},{ms},{ha},{ma}]".format(
-            fecha = self.fecha, puntoInter = self.puntoInter, 
+        return "{fecha}: {oficina} -->[{nac}={adulto},{genero}]".format(
+            fecha = self.fecha_hora.strftime("%d/%m/%Y"),
+            oficina = self.oficina,
             nac = self.nac, 
-            hs = self.hs, ms = self.ms, ha = self.ha, ma = self.ma,
-            total=self.total)
+            adulto = "A" if self.edad >= 18 else "M",
+            genero=self.genero)
 
 class EstadoFuerza(models.Model):
     idEdoFuerza = models.AutoField(primary_key=True)

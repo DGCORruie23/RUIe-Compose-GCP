@@ -27,8 +27,8 @@ class UsuarioAdmin(admin.ModelAdmin):
 class InadmitidoAdmin(admin.ModelAdmin):
     # list_display = ['fecha', 'oficina', 'puntoInter', 'nac', 'hs','hs', 'ha','ma']
     # list_editable = ['fecha','oficina', 'puntoInter', 'nac', 'hs','hs', 'ha','ma']
-    list_filter = ['fecha', 'oficina', 'puntoInter', 'nac',]
-    search_fields = ['fecha', 'oficina', 'puntoInter', 'nac',]
+    list_filter = ['fecha_hora', 'oficina', 'puntoInter', 'nac',]
+    search_fields = ['fecha_hora', 'oficina', 'puntoInter', 'nac',]
 
 admin.site.register(Usuario, UsuarioAdmin)
 admin.site.register(Paises)
