@@ -16,3 +16,4 @@ db.sqlite3
 /RUIeServer/entorno
 /RUIeServer/tmp
 /test_files/*.xlsx
+/certificados
