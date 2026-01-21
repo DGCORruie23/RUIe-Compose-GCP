@@ -141,7 +141,31 @@ class RescatePuntoSerializer(ModelSerializer):
 			'numFamilia',
 			'edad',
 			]
+
 	def create(self, validated_data):
+		if isinstance(validated_data, list):
+			for item in validated_data:
+				if 'nacionalidad' in item and item['nacionalidad']:
+					item['nacionalidad'] = item['nacionalidad'].upper()
+				if 'puntoEstra' in item and item['puntoEstra']:
+					item['puntoEstra'] = item['puntoEstra'].upper()
+				if 'nombre' in item and item['nombre']:
+					item['nombre'] = item['nombre'].upper()
+				if 'apellidos' in item and item['apellidos']:
+					item['apellidos'] = item['apellidos'].upper()
+				return RescatePunto.objects.bulk_create(
+					[RescatePunto(**item) for item in validated_data]
+				)
+
+		if 'nacionalidad' in validated_data and validated_data['nacionalidad']:
+			validated_data['nacionalidad'] = validated_data['nacionalidad'].upper()
+		if 'puntoEstra' in validated_data and validated_data['puntoEstra']:
+			validated_data['puntoEstra'] = validated_data['puntoEstra'].upper()
+		if 'nombre' in validated_data and validated_data['nombre']:
+			validated_data['nombre'] = validated_data['nombre'].upper()
+		if 'apellidos' in validated_data and validated_data['apellidos']:
+			validated_data['apellidos'] = validated_data['apellidos'].upper()
+			
 		return RescatePunto.objects.create(**validated_data)
 
 class ListRescatePuntoSerializer(serializers.HyperlinkedModelSerializer):

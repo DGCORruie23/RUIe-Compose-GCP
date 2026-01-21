@@ -63,7 +63,19 @@ Panel de Control de Administrador
             <tr>
                 <th class="border border-slate-300"><input type="checkbox" id="cboxAll" /></th>
                 <th class="border border-slate-300">#</th>
-                <th class="border border-slate-300 px-3 text-sm">Oficina</th>
+                <th class="border border-slate-300 px-3 text-sm">
+                    <div class="flex items-center justify-between">
+                        Oficina
+                        <button type="button" onclick="toggleFilterMenu(event, 2)"
+                            class="filter-btn text-gray-500 hover:text-black">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                                stroke="currentColor" class="w-4 h-4">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 01-.659 1.591l-5.432 5.432a2.25 2.25 0 00-.659 1.591v2.927a2.25 2.25 0 01-1.244 2.013L9.75 21v-6.568a2.25 2.25 0 00-.659-1.591L3.659 7.409A2.25 2.25 0 013 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0112 3z" />
+                            </svg>
+                        </button>
+                    </div>
+                </th>
                 <th class="border border-slate-300 px-3 text-sm">Fecha</th>
                 <th class="border border-slate-300 px-1 text-sm">Hora</th>
                 <th class="border border-slate-300 text-sm">Nombre del Agente</th>
@@ -81,10 +93,46 @@ Panel de Control de Administrador
 
                 {% comment %} <th class="border border-slate-300">Municipio</th> {% endcomment %}
                 <th class="border border-slate-300 text-sm">Punto Estrategico</th>
-                <th class="border border-slate-300 text-sm">Nacionalidad</th>
+                <th class="border border-slate-300 text-sm">
+                    <div class="flex items-center justify-between">
+                        Nacionalidad
+                        <button type="button" onclick="toggleFilterMenu(event, 8)"
+                            class="filter-btn text-gray-500 hover:text-black">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                                stroke="currentColor" class="w-4 h-4">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 01-.659 1.591l-5.432 5.432a2.25 2.25 0 00-.659 1.591v2.927a2.25 2.25 0 01-1.244 2.013L9.75 21v-6.568a2.25 2.25 0 00-.659-1.591L3.659 7.409A2.25 2.25 0 013 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0112 3z" />
+                            </svg>
+                        </button>
+                    </div>
+                </th>
                 <th class="border border-slate-300 px-2 text-sm">ISO</th>
-                <th class="border border-slate-300">Nombre</th>
-                <th class="border border-slate-300">Apellidos</th>
+                <th class="border border-slate-300">
+                    <div class="flex items-center justify-between">
+                        Nombre
+                        <button type="button" onclick="toggleFilterMenu(event, 10)"
+                            class="filter-btn text-gray-500 hover:text-black">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                                stroke="currentColor" class="w-4 h-4">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 01-.659 1.591l-5.432 5.432a2.25 2.25 0 00-.659 1.591v2.927a2.25 2.25 0 01-1.244 2.013L9.75 21v-6.568a2.25 2.25 0 00-.659-1.591L3.659 7.409A2.25 2.25 0 013 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0112 3z" />
+                            </svg>
+                        </button>
+                    </div>
+                </th>
+                <th class="border border-slate-300">
+                    <div class="flex items-center justify-between">
+                        Apellidos
+                        <button type="button" onclick="toggleFilterMenu(event, 11)"
+                            class="filter-btn text-gray-500 hover:text-black">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                                stroke="currentColor" class="w-4 h-4">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 01-.659 1.591l-5.432 5.432a2.25 2.25 0 00-.659 1.591v2.927a2.25 2.25 0 01-1.244 2.013L9.75 21v-6.568a2.25 2.25 0 00-.659-1.591L3.659 7.409A2.25 2.25 0 013 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0112 3z" />
+                            </svg>
+                        </button>
+                    </div>
+                </th>
                 <th class="border border-slate-300 text-sm">Parentesco</th>
                 <th class="border border-slate-300 text-xs">Fecha de Nacimiento</th>
                 <th class="border border-slate-300 text-sm">Edad</th>
@@ -167,6 +215,7 @@ Panel de Control de Administrador
     </table>
 </form>
 
+
 <!-- Modal de Confirmación -->
 <div id="modalConfirmacion" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden"
     style="z-index: 50;">
@@ -196,9 +245,40 @@ Panel de Control de Administrador
     </div>
 </div>
 
-
+<div id="filterDetails"
+    class="hidden absolute bg-white border border-gray-300 shadow-lg rounded-md p-2 z-50 w-64 text-sm text-black">
+    <div class="flex flex-col gap-2">
+        <button onclick="sortColumn('asc')" class="text-left hover:bg-gray-100 p-1 rounded flex items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                stroke="currentColor" class="w-4 h-4">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M3 4.5h14.25M3 9h9.75M3 13.5h9.75m4.5-4.5v12m0 0l-3.75-3.75M17.25 21L21 17.25" />
+            </svg>
+            Ordenar de A a Z
+        </button>
+        <button onclick="sortColumn('desc')" class="text-left hover:bg-gray-100 p-1 rounded flex items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                stroke="currentColor" class="w-4 h-4">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M3 4.5h14.25M3 9h9.75M3 13.5h5.25m5.25-.75L17.25 9m0 0L21 12.75M17.25 9v12" />
+            </svg>
+            Ordenar de Z a A
+        </button>
+        <hr class="border-gray-200">
+        <input type="text" id="filterSearch" placeholder="Buscar..."
+            class="border border-gray-300 rounded p-1 text-xs w-full mb-1" onkeyup="filterCheckboxes()">
+        <div id="filterCheckboxes" class="max-h-40 overflow-y-auto flex flex-col gap-1 pl-1">
+            <!-- Checkboxes generated dynamically -->
+        </div>
+        <div class="flex justify-between mt-2">
+            <button onclick="applyFilter()"
+                class="bg-blue-500 text-white px-3 py-1 rounded text-xs hover:bg-blue-600">Aceptar</button>
+            <button onclick="closeFilter()"
+                class="bg-gray-300 text-black px-3 py-1 rounded text-xs hover:bg-gray-400">Cancelar</button>
+        </div>
+    </div>
+</div>
 <script>
-
     function mostrarModal() {
         var checkboxes = document.querySelectorAll('input[name="registros_seleccionados"]:checked');
         var lista = document.getElementById('listaRegistros');
@@ -212,11 +292,11 @@ Panel de Control de Administrador
         checkboxes.forEach(function (checkbox) {
             var fila = checkbox.closest('tr');
             var id = checkbox.value;
-            var oficina = fila.cells[2].innerText; // Asumiendo que Oficina es la columna 3 (índice 2)
-            var fecha = fila.cells[3].innerText;   // Asumiendo que Fecha es la columna 4 (índice 3)
-            var iso3 = fila.cells[8].innerText;   // Asumiendo que Nombre es la columna 5 (índice 4)
-            var nomM = fila.cells[10].innerText;   // Asumiendo que Nombre es la columna 5 (índice 4)
-            var apeM = fila.cells[11].innerText;   // Asumiendo que Nombre es la columna 5 (índice 4)
+            // var oficina = fila.cells[2].innerText; 
+            // var fecha = fila.cells[3].innerText;   
+            var iso3 = fila.cells[8].innerText;
+            var nomM = fila.cells[10].innerText;
+            var apeM = fila.cells[11].innerText;
 
             var item = document.createElement('li');
             item.textContent = `${nomM} ${apeM}${"\n"}${iso3}`;
@@ -231,60 +311,281 @@ Panel de Control de Administrador
         document.getElementById('modalConfirmacion').classList.add('hidden');
     }
 
-    document.getElementById('btnConfirmar').addEventListener('click', function () {
-        document.getElementById('formEliminar').submit();
-    });
+    function checkALLT(checkbox) {
+        var checkboxSeleccionarTodo = document.getElementById('cboxAll');
+        if (!checkbox.checked) {
+            checkboxSeleccionarTodo.checked = false;
+        }
+    }
 
-    var checkboxSeleccionarTodo = document.getElementById('cboxAll');
-    checkboxSeleccionarTodo.addEventListener('change', function () {
-
-        if (checkboxSeleccionarTodo.checked === true) {
-            var filas = document.querySelectorAll('tbody tr');
-            // console.log(filas)
-            filas.forEach(function (fila) {
-                if (fila.style.display !== 'none') {
-                    // console.log(fila.cells[0])
-                    var tdCheckbox = fila.cells[0];
-                    // Accede al elemento <input> dentro del <td>
-                    var checkbox = tdCheckbox.querySelector('input.checkbox');
-                    if (checkbox) {
-                        checkbox.checked = true;
-                    }
-                }
+    document.addEventListener('DOMContentLoaded', function () {
+        var btn = document.getElementById('btnConfirmar');
+        if (btn) {
+            btn.addEventListener('click', function () {
+                document.getElementById('formEliminar').submit();
             });
-        } else {
-            var checkboxes = document.querySelectorAll('.checkbox');
-            // Itera sobre los checkboxes y los marca/desmarca según el estado del checkbox "Seleccionar Todo"
-            checkboxes.forEach(function (checkbox) {
-                checkbox.checked = checkboxSeleccionarTodo.checked;
+        }
+
+        var checkboxSeleccionarTodo = document.getElementById('cboxAll');
+        if (checkboxSeleccionarTodo) {
+            checkboxSeleccionarTodo.addEventListener('change', function () {
+                if (checkboxSeleccionarTodo.checked === true) {
+                    var filas = document.querySelectorAll('tbody tr');
+                    filas.forEach(function (fila) {
+                        if (fila.style.display !== 'none') {
+                            var tdCheckbox = fila.cells[0];
+                            var checkbox = tdCheckbox.querySelector('input.checkbox');
+                            if (checkbox) {
+                                checkbox.checked = true;
+                            }
+                        }
+                    });
+                } else {
+                    var checkboxes = document.querySelectorAll('.checkbox');
+                    checkboxes.forEach(function (checkbox) {
+                        checkbox.checked = checkboxSeleccionarTodo.checked;
+                    });
+                }
             });
         }
     });
 
-    function myFunction(x1, idInput) {
-        // Declare variables 
-        var input, filter, table, tr, td, i, txtValue, conteo;
-        input = document.getElementById(idInput);
-        filter = input.value.toUpperCase();
-        table = document.getElementById("myTable");
-        tr = table.getElementsByTagName("tr");
+    // Global state for filters
+    let currentColumnIndex = -1;
+    let activeFilters = {}; // { columnIndex: ["Value1", "Value2"] }
+    let allValuesForColumn = {}; // Cache unique values per column { columnIndex: ["A", "B"] }
 
-        conteo = 0
-        // Loop through all table rows, and hide those who don't match the search query
-        for (i = 0; i < tr.length; i++) {
-            td = tr[i].getElementsByTagName("td")[x1];
-            if (td) {
-                txtValue = td.textContent || td.innerText;
-                if (txtValue.toUpperCase().indexOf(filter) > -1) {
-                    tr[i].style.display = "";
-                    conteo++
-                } else {
-                    tr[i].style.display = "none";
+    // Close filter when clicking outside
+    document.addEventListener('click', function (event) {
+        const filterMenu = document.getElementById('filterDetails');
+        const isClickInside = filterMenu.contains(event.target);
+        const isButton = event.target.closest('.filter-btn');
+        if (!isClickInside && !isButton && !filterMenu.classList.contains('hidden')) {
+            closeFilter();
+        }
+    });
+
+    function toggleFilterMenu(event, index) {
+        event.stopPropagation();
+        const menu = document.getElementById('filterDetails');
+
+        // If opening same column, just toggle
+        if (currentColumnIndex === index && !menu.classList.contains('hidden')) {
+            closeFilter();
+            return;
+        }
+
+        currentColumnIndex = index;
+
+        // Position menu
+        const button = event.currentTarget;
+        const rect = button.getBoundingClientRect();
+        menu.style.top = `${window.scrollY + rect.bottom}px`;
+        menu.style.left = `${window.scrollX + rect.left}px`;
+        menu.classList.remove('hidden');
+
+        // Populate checkboxes
+        populateFilterCheckboxes(index);
+    }
+
+    function closeFilter() {
+        document.getElementById('filterDetails').classList.add('hidden');
+    }
+
+    function getTableRows() {
+        const table = document.getElementById("myTable");
+        return Array.from(table.getElementsByTagName("tbody")[0].getElementsByTagName("tr"));
+    }
+
+    function populateFilterCheckboxes(index) {
+        const rows = getTableRows();
+        const container = document.getElementById('filterCheckboxes');
+        container.innerHTML = '';
+
+        // Get unique values
+        let values = new Set();
+        rows.forEach(row => {
+            // Only consider visible rows? No, we should filter based on all rows originally?
+            // Excel shows all unique values present in the column usually.
+            // Let's get all values from the table.
+            const cell = row.getElementsByTagName("td")[index];
+            if (cell) {
+                values.add(cell.textContent.trim());
+            }
+        });
+
+        // Allow searching within the filter dropdown
+        const sortedValues = Array.from(values).sort();
+        allValuesForColumn[index] = sortedValues;
+
+        // "Select All" Option
+        const divAll = document.createElement('div');
+        divAll.className = 'flex items-center gap-2';
+        divAll.innerHTML = `<input type="checkbox" id="filter_all" checked onchange="toggleAllCheckboxes(this)"> <label for="filter_all" class="truncate font-semibold">(Seleccionar todo)</label>`;
+        container.appendChild(divAll);
+
+        const currentlyActive = activeFilters[index];
+
+        sortedValues.forEach(val => {
+            const div = document.createElement('div');
+            div.className = 'flex items-center gap-2 checkbox-item';
+            const isChecked = currentlyActive ? currentlyActive.includes(val) : true;
+            div.innerHTML = `<input type="checkbox" class="filter-option" value="${val}" ${isChecked ? 'checked' : ''}> <label class="truncate" title="${val}">${val}</label>`;
+            container.appendChild(div);
+        });
+
+        // Sync "Select All" state
+        updateSelectAllState();
+    }
+
+    function toggleAllCheckboxes(source) {
+        const checkboxes = document.querySelectorAll('.filter-option');
+        checkboxes.forEach(cb => {
+            // Only toggle visible checkboxes (if filtered by local search input)
+            if (cb.parentElement.style.display !== 'none') {
+                cb.checked = source.checked;
+            }
+        });
+    }
+
+    function updateSelectAllState() {
+        const checkboxes = document.querySelectorAll('.filter-option');
+        const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+        const selectAll = document.getElementById('filter_all');
+        if (selectAll) selectAll.checked = allChecked;
+    }
+
+    function filterCheckboxes() {
+        const search = document.getElementById('filterSearch').value.toUpperCase();
+        const items = document.querySelectorAll('.checkbox-item');
+        items.forEach(item => {
+            const text = item.textContent || item.innerText;
+            if (text.toUpperCase().indexOf(search) > -1) {
+                item.style.display = "";
+            } else {
+                item.style.display = "none";
+            }
+        });
+    }
+
+    function applyFilter() {
+        // Save state for this column
+        const checkboxes = document.querySelectorAll('.filter-option:checked');
+        const selectedValues = Array.from(checkboxes).map(cb => cb.value);
+
+        // If all selected (or none, which implies clear), remove from activeFilters to save performance? 
+        // Better to just store what is allowed.
+        // If list is equal to allValues, we can remove it from active filters to indicate "no filter".
+        const allVals = allValuesForColumn[currentColumnIndex] || [];
+
+        // Logic: If user keeps everything checked, it's effectively "no filter" for this column
+        // But we must be careful if the user search-filtered the list and selected a subset.
+        // Let's just store the allowed list.
+
+        if (checkboxes.length === document.querySelectorAll('.filter-option').length) {
+            delete activeFilters[currentColumnIndex];
+        } else {
+            activeFilters[currentColumnIndex] = selectedValues;
+        }
+
+        runAllFilters();
+        closeFilter();
+    }
+
+    function runAllFilters() {
+        const rows = getTableRows();
+        let count = 0;
+
+        // Get values from external search inputs (the ones at the top of page)
+        // We need to integrate with existing "myFunction" logic.
+        // Ideally, we rewrite myFunction to just toggle a "search-hidden" class, 
+        // and this function toggles a "filter-hidden" class, and we show row if neither.
+        // BUT, modifying the existing HTML structure too much might be risky.
+        // Let's reuse the logic. The existing 'myFunction' hides rows directly via style.display.
+        // We should probably cooperate with it.
+        // Actually, the user asked to ADD filters, implying they should work together.
+
+        // Strategy: We will apply OUR filters. The external inputs call 'myFunction'.
+        // 'myFunction' loops through ALL rows and checks its own input. 
+        // If we hide a row, 'myFunction' might show it again if it matches the text search?
+        // NO. `tr[i].style.display = ""` vs `"none"`.
+        // If I set "none", and then they type in the search box, `myFunction` runs.
+        // `myFunction` does: `tr[i].style.display = ""` if match. This overrides my filter.
+
+        // CORRECT APPROACH: Modify `myFunction` to also check `isRowVisibleByExcelFilters(tr)`.
+        // But first, let's just make `runAllFilters` do the heavy lifting or simply trigger `myFunction`.
+        // Since `myFunction` is specific to one input, calling it for all inputs is tricky.
+
+        // Let's MAKE `runAllFilters` base of truth.
+        // We can check the values of the external inputs here too.
+
+        const inputAgente = document.getElementById('myInputAG').value.toUpperCase();
+        const inputOR = document.getElementById('myInputOR').value.toUpperCase();
+        const inputHora = document.getElementById('myInputHRS').value.toUpperCase();
+        const inputPunto = document.getElementById('myInputP').value.toUpperCase();
+        const inputNacio = document.getElementById('myInputNac').value.toUpperCase();
+
+        rows.forEach(row => {
+            let show = true;
+
+            // Check Excel Filters
+            for (const [colIdx, allowedVals] of Object.entries(activeFilters)) {
+                const cell = row.cells[colIdx];
+                if (!cell) continue;
+                const val = cell.textContent.trim();
+                if (!allowedVals.includes(val)) {
+                    show = false;
+                    break;
                 }
             }
-        }
 
-        document.getElementById("totales").innerHTML = "Registros: " + conteo
+            // Check External Inputs (Logical AND)
+            if (show) {
+                if (inputAgente && row.cells[5].textContent.toUpperCase().indexOf(inputAgente) === -1) show = false;
+                if (show && inputOR && row.cells[2].textContent.toUpperCase().indexOf(inputOR) === -1) show = false;
+                // For Hora (col 4 usually?) existing code says index 4.
+                if (show && inputHora && row.cells[4].textContent.toUpperCase().indexOf(inputHora) === -1) show = false;
+                // For Punto (col 7? existing code says 7)
+                if (show && inputPunto && row.cells[7].textContent.toUpperCase().indexOf(inputPunto) === -1) show = false;
+                // For Nac (col 8? existing code says 8)
+                if (show && inputNacio && row.cells[8].textContent.toUpperCase().indexOf(inputNacio) === -1) show = false;
+            }
+
+            if (show) {
+                row.style.display = "";
+                count++;
+            } else {
+                row.style.display = "none";
+            }
+        });
+
+        document.getElementById("totales").innerHTML = "Registros: " + count;
+    }
+
+    // Override/Update the existing myFunction to simply trigger runAllFilters
+    // This ensures compatibility.
+    function myFunction(x1, idInput) {
+        // We ignore x1, as we check all inputs in runAllFilters now for consistency
+        runAllFilters();
+    }
+
+    function sortColumn(direction) {
+        const table = document.getElementById("myTable");
+        const tbody = table.querySelector("tbody");
+        const rows = Array.from(tbody.querySelectorAll("tr"));
+        const idx = currentColumnIndex;
+
+        rows.sort((a, b) => {
+            const valA = a.cells[idx].textContent.trim().toLowerCase();
+            const valB = b.cells[idx].textContent.trim().toLowerCase();
+
+            if (valA < valB) return direction === 'asc' ? -1 : 1;
+            if (valA > valB) return direction === 'asc' ? 1 : -1;
+            return 0;
+        });
+
+        rows.forEach(row => tbody.appendChild(row));
+        closeFilter();
     }
 </script>
 

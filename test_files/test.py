@@ -45,49 +45,50 @@ from openpyxl import Workbook
 # # Datos por fechas
 
 fecha_inicio = date(2025, 1, 1)
-fecha_fin = date(2025, 5, 19)
+fecha_fin = date(2025, 12, 31)
 
-oficinaR = 'BAJA CALIFORNIA'
+# oficinaR = 'BAJA CALIFORNIA'
 
 fechaIN = datetime.strptime(f"{fecha_inicio}", "%Y-%m-%d")
 fechaFN = datetime.strptime(f"{fecha_fin}", "%Y-%m-%d")
 
 array_fechas = [(fechaIN + timedelta(days=d)).strftime("%d-%m-%y") for d in range((fechaFN - fechaIN).days + 1)]
 
-rescates_por_oficina = RescatePunto.objects.filter(fecha__in= array_fechas, oficinaRepre=oficinaR) \
-    .values('fecha')\
+# rescates_por_oficina = RescatePunto.objects.filter(fecha__in= array_fechas, oficinaRepre=oficinaR) \
+rescates_por_oficina = RescatePunto.objects.filter(fecha__in= array_fechas) \
+    .values('oficinaRepre', 'puntoEstra')\
     .annotate(veces=Count('idRescate')) \
-    .order_by('fecha')
+    .order_by('oficinaRepre')
 
-counts_by_date = { entry['fecha']: entry['veces'] for entry in rescates_por_oficina }
+# counts_by_date = { entry['fecha']: entry['veces'] for entry in rescates_por_oficina }
 
-# 3) construir la lista final incluyendo ceros
-resultados = []
+# # 3) construir la lista final incluyendo ceros
+# resultados = []
 
-for d in array_fechas:
-    resultados.append({
-        'fecha': d,
-        'veces': counts_by_date.get(d, 0)
-    })
+# for d in array_fechas:
+#     resultados.append({
+#         'fecha': d,
+#         'veces': counts_by_date.get(d, 0)
+#     })
 
-# rescates_por_agente = RescatePunto.objects.filter(fecha__in= array_fechas) \
-#     .values('oficinaRepre', 'nombreAgente') \
-#     .annotate(veces=Count('idRescate')) \
-#     .order_by('oficinaRepre', 'nombreAgente')
+# # rescates_por_agente = RescatePunto.objects.filter(fecha__in= array_fechas) \
+# #     .values('oficinaRepre', 'nombreAgente') \
+# #     .annotate(veces=Count('idRescate')) \
+# #     .order_by('oficinaRepre', 'nombreAgente')
 
 
 # Crear el archivo Excel
-ruta_archivo_excel = os.path.join(os.getcwd(), f'test_files/Resc{oficinaR}{fecha_inicio.day:02}_{fecha_inicio.month:02}.xlsx')
+ruta_archivo_excel = os.path.join(os.getcwd(), f'test_files/Resc_puntos_{fecha_inicio.day:02}_{fecha_inicio.month:02}.xlsx')
 wb = Workbook()
 ws = wb.active
-ws.title = "Rescates por OFICINA"
+ws.title = "Rescates por Punto"
 
 # Escribir la cabecera
-ws.append(["fecha", "Rescates"])
+ws.append(["oficinaRepre", "puntoEstra", "Total"])
 
 # Llenar el archivo Excel con los datos
-for registro in resultados:
-    ws.append([registro['fecha'], registro['veces']])
+for registro in rescates_por_oficina:
+    ws.append([registro['oficinaRepre'], registro['puntoEstra'], registro['veces']])
 
 # Guardar el archivo
 wb.save(ruta_archivo_excel)

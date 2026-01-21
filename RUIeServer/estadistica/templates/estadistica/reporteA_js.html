@@ -462,6 +462,13 @@
   <button id="btn-cecoPuntos">Descargar Reporte CECO por Puntos</button>
   <button id="btn-cecoNacs">Descargar Reporte CECO por Nacionalidad</button>
 
+  <form action="{% url 'exportar_excel_reporteT' %}" method="post" style="display:inline;">
+    {% csrf_token %}
+    <input type="hidden" name="fechaI" value="{{ fecha|date:'Y-m-d' }}">
+    <input type="hidden" name="retornos" value="{{ dato }}">
+    <button type="submit" id="btn-excelT">Descargar Excel Completo</button>
+  </form>
+
   <div>
     <hr class='lineaD' />
     {% comment %} ========================================================== {% endcomment %}
