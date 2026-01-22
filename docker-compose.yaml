@@ -3,7 +3,7 @@ services:
     container_name: RUIEapp
     restart: always
     build: ./RUIeServer
-    command: gunicorn serverRUI.wsgi:application --bind 0.0.0.0:8000 --reload
+    command: gunicorn serverRUI.wsgi:application --bind 0.0.0.0:8000 --reload --timeout 300
     #command: python manage.py runserver 0.0.0.0:8000
     expose:
       - 8000
