@@ -96,6 +96,7 @@ DATABASES = {
         "PASSWORD": os.environ.get("SQL_PASSWORD", "password"),
         "HOST": os.environ.get("SQL_HOST", "localhost"),
         "PORT": os.environ.get("SQL_PORT", "5432"),
+        "CONN_MAX_AGE": os.environ.get("SQL_CONN_MAX_AGE", 600),
     }
 }
 

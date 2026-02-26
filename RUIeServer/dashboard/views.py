@@ -16,13 +16,13 @@ import json
 # Create your views here.
 
 @login_required
-
 def dashboard(request):
+    user_profile = getattr(request.user, 'usuarioL', None)
+    userDataI = [user_profile] if user_profile else []
 
     if request.method == 'GET':
         form = ExcelForm()
         formCargar1 = CargarArchivoForm()
-        userDataI = usuarioL.objects.filter(user__username=request.user)
         data = {
             'usuario' : userDataI,
             'form': form,
@@ -31,8 +31,8 @@ def dashboard(request):
         return render(request, "dashboard/dashboard.html", context=data)
     
     elif request.method == 'POST':
-        userDataI = usuarioL.objects.filter(user__username=request.user)
         form = ExcelForm(request.POST)
+        valores = []
         if(form.is_valid()):
             dia = request.POST["fechaDescarga_day"]
             mes = request.POST["fechaDescarga_month"]
@@ -40,7 +40,8 @@ def dashboard(request):
 
             fechaR = datetime.strptime(f"{dia}/{mes}/{year}", "%d/%m/%Y").strftime('%d-%m-%y')
 
-            valores = RescatePunto.objects.filter(fecha=fechaR).filter(oficinaRepre=userDataI[0].oficinaR)
+            oficina = user_profile.oficinaR if user_profile else None
+            valores = RescatePunto.objects.filter(fecha=fechaR, oficinaRepre=oficina)
 
         data = {
             'usuario' : userDataI,
@@ -52,12 +53,9 @@ def dashboard(request):
 
     else: 
         form = ExcelForm()
-        
-        userDataI = usuarioL.objects.filter(user__username=request.user)
         data = {
             'usuario' : userDataI,
             'form': form,
-            
         }
         return render(request, "dashboard/dashboard.html", context=data) 
 
@@ -77,15 +75,12 @@ def datos_fecha(request):
         return redirect('/dashboard')
     
 @login_required
-
 def datos_fechas(request):
     if request.method == 'POST':
         form = ExcelForm(request.POST)
         if form.is_valid():
-            # Obtiene la fecha seleccionada del formulario
-
-
-            userDataI = usuarioL.objects.filter(user__username=request.user)
+            user_profile = getattr(request.user, 'usuarioL', None)
+            userDataI = [user_profile] if user_profile else []
             
             fechaI = request.POST["fechaInicio"]
             fechaF = request.POST["fechaFin"]
@@ -95,30 +90,26 @@ def datos_fechas(request):
             
             array_fechas = [(fechaIN + timedelta(days=d)).strftime("%d-%m-%y") for d in range((fechaFN - fechaIN).days + 1)]
             form = ExcelForm()
+            
+            valores = RescatePunto.objects.filter(fecha__in=array_fechas)
                 
             if request.user.is_superuser:
-                valores = RescatePunto.objects.filter(fecha=array_fechas)
+                template = "dashboard/datos_diaSU.html"
+            else:
+                oficina = user_profile.oficinaR if user_profile else None
+                valores = valores.filter(oficinaRepre=oficina)
+                template = "dashboard/datos_dia.html"
 
-                data = {
+            data = {
                 'usuario' : userDataI,
                 'form': form,
                 'values' : valores,
                 'fecha_P' : array_fechas,
-                }
+            }
 
-                return render(request, "dashboard/datos_diaSU.html", context=data)
-            else:
-                valores = RescatePunto.objects.filter(fecha=array_fechas).filter(oficinaRepre=userDataI[0].oficinaR)
-                data = {
-                    'usuario' : userDataI,
-                    'form': form,
-                    'values' : valores,
-                    'fecha_P' : array_fechas,
-                }
-
-                return render(request, "dashboard/datos_dia.html", context=data)
-    else:
-        return redirect('/dashboard')
+            return render(request, template, context=data)
+    
+    return redirect('/dashboard')
     
 @login_required
 
@@ -143,235 +134,186 @@ def eliminar_registros(request):
 
 @login_required
 def tabla_registros(request, year=None, month=None, day=None):
-    
-    userDataI = usuarioL.objects.filter(user__username=request.user)
+    user_profile = getattr(request.user, 'usuarioL', None)
+    userDataI = [user_profile] if user_profile else []
+
     fechaR = datetime.strptime(f"{day}/{month}/{year}", "%d/%m/%Y").strftime('%d-%m-%y')
     form = ExcelForm()
     
+    valores = RescatePunto.objects.filter(fecha=fechaR)
+
     if request.user.is_superuser:
-        valores = RescatePunto.objects.filter(fecha=fechaR)
-
-        data = {
-        'usuario' : userDataI,
-        'form': form,
-        'values' : valores,
-        'fecha_P' : fechaR,
-        }
-
-        return render(request, "dashboard/datos_diaSU.html", context=data)
+        template = "dashboard/datos_diaSU.html"
     else:
-        valores = RescatePunto.objects.filter(fecha=fechaR).filter(oficinaRepre=userDataI[0].oficinaR)
-        data = {
+        oficina = user_profile.oficinaR if user_profile else None
+        valores = valores.filter(oficinaRepre=oficina)
+        template = "dashboard/datos_dia.html"
+
+    data = {
         'usuario' : userDataI,
         'form': form,
         'values' : valores,
         'fecha_P' : fechaR,
-        }
+    }
 
-        return render(request, "dashboard/datos_dia.html", context=data)
+    return render(request, template, context=data)
     
 @login_required
-
 def editarData(request, pk):
-    if request.user.is_authenticated:
-        rescate = RescatePunto.objects.get(idRescate=pk)
-        if request.method == 'GET':
-            # userDataI = usuarioL.objects.filter(user__username=request.user)
-            ofiRep = str(rescate.oficinaRepre)
-
-            types_PRescateA = []
-            types_PRescateC = []
-            types_PRescateCA = []
-            types_PRescateF = []
-            types_PRescateM = []
-            types_Naciona = []
-
-            types_puntosAll = []
-
-            for punt in EstadoFuerza.objects.all():
-                nomS = str(punt.oficinaR)
-                types_puntosAll.append(nomS.strip())
-
-            for punt in PuntosInternacion.objects.filter(estadoPunto=ofiRep, tipoPunto="AEREOS"):
-                nomS = str(punt.nombrePunto)
-                types_PRescateA.append(nomS.strip())
-
-            for mun in Municipios.objects.filter(estado=ofiRep):
-                nomS = str(mun.nomMunicipio)
-                types_PRescateM.append(nomS.strip())
-
-            for nac in Paises.objects.all():
-                nomS = str(nac.nombre_pais)
-                types_Naciona.append(nomS.strip())
-
-            for puntos in EstadoFuerza.objects.filter(oficinaR=ofiRep):
-                nomS = str(puntos.nomPuntoRevision)
-                if puntos.tipoP == "Carretero":
-                    types_PRescateC.append(nomS.strip())
-                elif puntos.tipoP == "Central de autobús":
-                    types_PRescateCA.append(nomS.strip())
-                elif puntos.tipoP == "Ferroviario":
-                    types_PRescateF.append(nomS.strip())
-                else:
-                    # print(nomS)
-                    pass
-
-            tiposPNombre = [
-                'aeropuerto',
-                'carretero',
-                'central de autobus',
-                'disuadidos',
-                'ferrocarril',
-                'visitas de verificación',
-                'puestos a disposición',
-                'voluntarios',
-            ]
-
-            puntoR = ""
-            if rescate.aeropuerto:
-                puntoR = tiposPNombre[0]
-            elif rescate.carretero:
-                puntoR = tiposPNombre[1]
-            elif rescate.centralAutobus:
-                puntoR = tiposPNombre[2]
-            elif rescate.casaSeguridad:
-                puntoR = tiposPNombre[3]
-            elif rescate.ferrocarril:
-                puntoR = tiposPNombre[4]
-            elif rescate.hotel:
-                puntoR = tiposPNombre[5]
-            elif rescate.puestosADispo:
-                puntoR = tiposPNombre[6]
-            elif rescate.voluntarios:
-                puntoR = tiposPNombre[7]
-            else: 
-                puntoR = ''
-
-            fecha_Naci = datetime.strptime(rescate.fechaNacimiento, "%d/%m/%Y").strftime('%Y-%m-%d')
-            # print(EstadoFuerza.objects.all())
-            datosR = {
-                'idRescate': pk,
-                'fecha': rescate.fecha,
-                # 'fecha': fecha_res,
-                'hora': datetime.strptime(rescate.hora, "%H:%M").strftime("%H:%M"),
-                'tipo_punto' : puntoR,
-                'puntoEstra': rescate.puntoEstra,
-                'nacionalidad': rescate.nacionalidad,
-                'nombre': rescate.nombre,
-                'apellidos': rescate.apellidos,
-                'parentesco': rescate.parentesco,
-                'fechaNacimiento': fecha_Naci,
-                'sexo': rescate.sexo,
-                'embarazo': rescate.embarazo,
-                'numFamilia': rescate.numFamilia,
-                'oficinaR': rescate.oficinaRepre
-            }
-
-            # datosFuerza = EstadoFuerza.objects.all()
-            print(rescate.oficinaRepre)
-            print(ofiRep)
-            print(rescate.hora)
-            form = RegistroNewForm(initial=datosR)
-            # print(types_PRescateC)
-            pE = str(EstadoFuerza.objects.filter(oficinaR=ofiRep))
-            pE = pE.strip()
-
-            datos_puntos_estrategicos = {}
-            for estado_fuerza in EstadoFuerza.objects.all():
-                nombre_oficina = estado_fuerza.oficinaR
-                tipo_punto = estado_fuerza.tipoP
-                if nombre_oficina not in datos_puntos_estrategicos:
-                    datos_puntos_estrategicos[nombre_oficina] = {}
-                if tipo_punto not in datos_puntos_estrategicos[nombre_oficina]:
-                    datos_puntos_estrategicos[nombre_oficina][tipo_punto] = []
-                datos_puntos_estrategicos[nombre_oficina][tipo_punto].append(estado_fuerza.nomPuntoRevision)
-
-
-            # print(datos_puntos_estrategicos)
-
-
-            datos_puntos_internacion = {}
-            for punto_internacion in PuntosInternacion.objects.all():
-                nombre_punto = punto_internacion.nombrePunto
-                estado_punto = punto_internacion.estadoPunto
-                tipo_punto = punto_internacion.tipoPunto
-
-                if estado_punto not in datos_puntos_internacion:
-                    datos_puntos_internacion[estado_punto] = {}
-                if tipo_punto not in datos_puntos_internacion[estado_punto]:
-                    datos_puntos_internacion[estado_punto][tipo_punto] = []
-
-                datos_puntos_internacion[estado_punto][tipo_punto].append(nombre_punto)
-
-            datos_municipios = {}
-
-            for municipio in Municipios.objects.all():
-                oficinaR = municipio.estado
-                nomMunicipio = municipio.nomMunicipio
-
-                if oficinaR not in datos_municipios:
-                    datos_municipios[oficinaR] = []
-                
-                datos_municipios[oficinaR].append(nomMunicipio)
-
-            # print(datos_municipios)
-            # print("se acabooooooooooooooooooooooooooooooooooooooooooooooooo")
-            # print(datos_puntos_internacion)
-            # print(datosR)
-            datos = {
-                "form" : form,
-                "value": rescate,
-                "datosR": datosR,
-                "puntosEstrategicos": datos_puntos_estrategicos,
-                "puntosInternacion": datos_puntos_internacion,     
-                "municipios": datos_municipios,
-                "res_aero": types_PRescateA,
-                "res_carre": types_PRescateC,
-                "res_central": types_PRescateCA,
-                "res_ferro": types_PRescateF,
-                "municipio": types_PRescateM,
-                "nacion": types_Naciona,
-                'tiposPNombre': tiposPNombre,
-            }
-
-            # print(ofiRep)
-            # print(types_PRescateA)
-            # print(rescate.puntoEstra)
-            
-            return render(request, "dashboard/editarDato.html", context=datos )
+    rescate = get_object_or_404(RescatePunto, idRescate=pk)
+    
+    if request.method == 'GET':
+        ofiRep = str(rescate.oficinaRepre)
         
-        if request.method == 'POST':
-            form = RegistroNewForm(request.POST)
-            datos = {
-                "form" : form,
-                "value": rescate,
-            }
-            if form.is_valid():
-                form.save()
-                fecha_form = form.cleaned_data['fecha']
-                # print("entra a guardar info")
-                # print(fecha_form)
-                messages.success(request, "El registro ha sido modificado")
-                fecha_seleccionada = datetime.strptime(f"{fecha_form}", "%d-%m-%y")
-                # return redirect('../datos/')
-                return redirect('tabla_registros_fecha', year=fecha_seleccionada.year, month=fecha_seleccionada.month, day=fecha_seleccionada.day)
-            else:
-                print(form.errors)
-                print("datos erroneos")
-                messages.success(request, "Datos Erroneos")
-                return render(request, "dashboard/editarDato.html", context=datos )
+        # Mapeo de tipos de punto para simplificar la lógica
+        punto_attr_map = {
+            'aeropuerto': 'aeropuerto',
+            'carretero': 'carretero',
+            'central de autobus': 'centralAutobus',
+            'disuadidos': 'casaSeguridad',
+            'ferrocarril': 'ferrocarril',
+            'visitas de verificación': 'hotel',
+            'puestos a disposición': 'puestosADispo',
+            'voluntarios': 'voluntarios',
+        }
+        
+        tiposPNombre = list(punto_attr_map.keys())
+        puntoR = next((name for name, attr in punto_attr_map.items() if getattr(rescate, attr)), '')
+
+        # Preparar datos iniciales para el formulario
+        try:
+            fecha_naci_dt = datetime.strptime(rescate.fechaNacimiento, "%d/%m/%Y")
+            fecha_naci_str = fecha_naci_dt.strftime('%Y-%m-%d')
+        except (ValueError, TypeError):
+            fecha_naci_str = ""
+
+        datosR = {
+            'idRescate': pk,
+            'fecha': rescate.fecha,
+            'hora': datetime.strptime(rescate.hora, "%H:%M").strftime("%H:%M") if rescate.hora else "",
+            'tipo_punto': puntoR,
+            'puntoEstra': rescate.puntoEstra,
+            'nacionalidad': rescate.nacionalidad,
+            'nombre': rescate.nombre,
+            'apellidos': rescate.apellidos,
+            'parentesco': rescate.parentesco,
+            'fechaNacimiento': fecha_naci_str,
+            'sexo': rescate.sexo,
+            'embarazo': rescate.embarazo,
+            'numFamilia': rescate.numFamilia,
+            'oficinaR': rescate.oficinaRepre
+        }
+
+        form = RegistroNewForm(initial=datosR)
+
+        # Optimización: Consultas únicas y procesamiento en memoria
+        # Estado Fuerza
+        types_puntosAll = []
+        types_PRescateC = []
+        types_PRescateCA = []
+        types_PRescateF = []
+        datos_puntos_estrategicos = {}
+
+        for ef in EstadoFuerza.objects.all():
+            oficina = ef.oficinaR
+            tipo = ef.tipoP
+            nombre = ef.nomPuntoRevision.strip()
+            nombre_upper = nombre
+
+            types_puntosAll.append(oficina)
             
-    else:
-        messages.success(request, "Necesitas ingresar para poder modificar la informacion")
-        return redirect('')
+            # Agrupación para el diccionario de puntos estratégicos
+            if oficina not in datos_puntos_estrategicos:
+                datos_puntos_estrategicos[oficina] = {}
+            if tipo not in datos_puntos_estrategicos[oficina]:
+                datos_puntos_estrategicos[oficina][tipo] = []
+            datos_puntos_estrategicos[oficina][tipo].append(nombre)
+
+            # Filtros específicos para la oficina actual del rescate
+            if oficina == ofiRep:
+                if tipo == "Carretero":
+                    types_PRescateC.append(nombre_upper)
+                elif tipo == "Central de autobús":
+                    types_PRescateCA.append(nombre_upper)
+                elif tipo == "Ferroviario":
+                    types_PRescateF.append(nombre_upper)
+
+        # Puntos de Internación
+        types_PRescateA = []
+        datos_puntos_internacion = {}
+        for pi in PuntosInternacion.objects.all():
+            est = pi.estadoPunto
+            tipo = pi.tipoPunto
+            nom = pi.nombrePunto.strip()
+            
+            if est not in datos_puntos_internacion:
+                datos_puntos_internacion[est] = {}
+            if tipo not in datos_puntos_internacion[est]:
+                datos_puntos_internacion[est][tipo] = []
+            datos_puntos_internacion[est][tipo].append(nom)
+
+            if est == ofiRep and tipo == "AEREOS":
+                types_PRescateA.append(nom)
+
+        # Municipios
+        types_PRescateM = []
+        datos_municipios = {}
+        for mun in Municipios.objects.all():
+            est = mun.estado
+            nom = mun.nomMunicipio.strip()
+            
+            if est not in datos_municipios:
+                datos_municipios[est] = []
+            datos_municipios[est].append(nom)
+
+            if est == ofiRep:
+                types_PRescateM.append(nom)
+
+        # Nacionalidades
+        types_Naciona = [p.nombre_pais.strip() for p in Paises.objects.all()]
+
+        context = {
+            "form": form,
+            "value": rescate,
+            "datosR": datosR,
+            "puntosEstrategicos": datos_puntos_estrategicos,
+            "puntosInternacion": datos_puntos_internacion,
+            "municipios": datos_municipios,
+            "res_aero": types_PRescateA,
+            "res_carre": types_PRescateC,
+            "res_central": types_PRescateCA,
+            "res_ferro": types_PRescateF,
+            "municipio": types_PRescateM,
+            "nacion": types_Naciona,
+            'tiposPNombre': tiposPNombre,
+        }
+        
+        return render(request, "dashboard/editarDato.html", context=context)
+    
+    elif request.method == 'POST':
+        form = RegistroNewForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "El registro ha sido modificado")
+            fecha_form = form.cleaned_data['fecha']
+            try:
+                fecha_sel = datetime.strptime(f"{fecha_form}", "%d-%m-%y")
+                return redirect('tabla_registros_fecha', year=fecha_sel.year, month=fecha_sel.month, day=fecha_sel.day)
+            except ValueError:
+                return redirect('/dashboard')
+        else:
+            print(form.errors)
+            messages.success(request, "Datos Erróneos")
+            return render(request, "dashboard/editarDato.html", context={"form": form, "value": rescate})
+
+    return redirect("/dashboard")
 
 @login_required
-
 def mostrarData(request):
-
     if request.user.is_authenticated:
         if request.method == 'POST':
-            userDataI = usuarioL.objects.filter(user__username=request.user)
+            user_profile = getattr(request.user, 'usuarioL', None)
+            userDataI = [user_profile] if user_profile else []
             
             form = ExcelForm(request.POST)
             form1 = RegistroNewForm(request.POST)
@@ -385,26 +327,20 @@ def mostrarData(request):
 
                 if request.user.is_superuser:
                     valores = RescatePunto.objects.filter(fecha=fechaR)
-
-                    data = {
-                    'usuario' : userDataI,
-                    'form': form,
-                    'values' : valores,
-                    'fecha_P' : fechaR,
-                    }
-
-                    return render(request, "dashboard/datos_diaSU.html", context=data)
+                    template = "dashboard/datos_diaSU.html"
                 else:
-                    valores = RescatePunto.objects.filter(fecha=fechaR).filter(oficinaRepre=userDataI[0].oficinaR)
+                    oficina = userDataI[0].oficinaR if userDataI else None
+                    valores = RescatePunto.objects.filter(fecha=fechaR, oficinaRepre=oficina)
+                    template = "dashboard/datos_dia.html"
 
-                    data = {
-                    'usuario' : userDataI,
-                    'form': form,
-                    'values' : valores,
-                    'fecha_P' : fechaR,
-                    }
+                data = {
+                'usuario' : userDataI,
+                'form': form,
+                'values' : valores,
+                'fecha_P' : fechaR,
+                }
 
-                    return render(request, "dashboard/datos_dia.html", context=data)
+                return render(request, template, context=data)
 
             if form1.is_valid():
                 fechaR = request.POST["fecha"]
@@ -413,7 +349,8 @@ def mostrarData(request):
                 if request.user.is_superuser:
                     valores = RescatePunto.objects.filter(fecha=fechaR)
                 else:
-                    valores = RescatePunto.objects.filter(fecha=fechaR).filter(oficinaRepre=userDataI[0].oficinaR)
+                    oficina = user_profile.oficinaR if user_profile else None
+                    valores = RescatePunto.objects.filter(fecha=fechaR, oficinaRepre=oficina)
 
                 data = {
                 'usuario' : userDataI,

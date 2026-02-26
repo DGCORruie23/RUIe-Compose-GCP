@@ -279,7 +279,7 @@ class RegistroNewForm(forms.Form):
             fecha=self.data['fecha'],
             hora=self.data['hora'],
 
-            puntoEstra=puntoEstra,
+            puntoEstra=puntoEstra.upper(),
 
             aeropuerto=db_aerop,
             carretero=db_carre,
@@ -290,11 +290,11 @@ class RegistroNewForm(forms.Form):
             puestosADispo=db_puestos,
             voluntarios=db_volunt,
 
-            nacionalidad=db_nacionalid,
-            iso3=db_iso3,
-            nombre=self.data['nombre'],
-            apellidos=self.data['apellidos'],
-            parentesco=self.data['parentesco'],
+            nacionalidad=str(db_nacionalid).upper(),
+            iso3=str(db_iso3),
+            nombre=str(self.data['nombre']).upper(),
+            apellidos=str(self.data['apellidos']).upper(),
+            parentesco=str(self.data['parentesco']),
             fechaNacimiento=fecha_nacimiento,
             sexo=self.data['sexo'],
             embarazo=embarazo1,

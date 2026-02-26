@@ -1,94 +1,44 @@
 {% extends "base/base.html" %}
 
 {% block title %}
-    Editar Registro
+Editar Registro
 {% endblock title %}
 
 {% block navigation %}
-    Edición de registros
+Edición de registros
 {% endblock navigation %}
-
-{% block styles %}
-
-<style>
-        body {
-            margin: 0;
-            padding: 0;
-            font-family: Arial, sans-serif;
-            background-color: #13322B;
-            color: #000000;
-        }
-
-        .container {
-            max-width: 500px;
-            margin: 50px auto;
-            padding: 20px;
-            background-color: #D4C19C;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
-        }
-
-        .container h2 {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        .form-group label {
-            display: block;
-            font-weight: bold;
-        }
-
-        .form-group input,
-        .form-group select {
-            width: 100%;
-            padding: 10px;
-            border: 2px solid #4E232E;
-            border-radius: 5px;
-            box-sizing: border-box;
-            background-color: #285C4D;
-            color: #fff;
-            margin-top: 5px;
-        }
-
-        .btn-submit {
-            background-color: #C30E2E;
-            color: #fff;
-            border: none;
-            padding: 10px 20px;
-            font-size: 16px;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-
-        .btn-submit:hover {
-            background-color: #9F2241;
-        }
-</style>
-
-{% endblock styles %}
 
 {% block content %}
 {% if user.is_authenticated %}
-    <div class="grow">
-        <div class="container">
-            <form method="post" action="#"  enctype="multipart/form-data">{% csrf_token %}
 
-                <p>
-                    <div class="form-group">
-                    <label for="id_oficinaRepre">Oficina:</label>
-                    <!-- <input type="text" name="idoficinaRepre" value="{{datosR.oficinaR}}" required="" id="id_oficinaRepre"> -->
-                    <select type="text" name="oficinaR" value="{{ datosR.oficinaR }}" class="elegant-input" id="id_oficinaRepre" {% if not request.user.is_superuser %} hidden {% endif %}>
-                        <option value="AGUASCALIENTES" {% if datosR.oficinaR == 'AGUASCALIENTES' %}selected{% endif %}>AGUASCALIENTES</option>
+<!-- Inyectando diccionarios de forma segura para JS -->
+{{ puntosEstrategicos|json_script:"datosEstrategicos" }}
+{{ puntosInternacion|json_script:"datosInternacion" }}
+{{ municipios|json_script:"datosMunicipios" }}
+
+<div class="flex-grow flex justify-center py-12 px-4 bg-[#ffffff00] text-black min-h-screen">
+    <div class="w-full max-w-lg bg-[#D4C19C] rounded-xl shadow-lg p-6">
+        <h2 class="text-2xl font-bold text-center mb-6 text-[#4E232E]">Editar Registro</h2>
+
+        <form method="post" action="#" enctype="multipart/form-data" class="space-y-4">
+            {% csrf_token %}
+
+            <input type="hidden" name="idRescate" value="{{datosR.idRescate}}" id="id_idRescate">
+            
+
+            <div class="flex flex-col" {% if not request.user.is_superuser %} hidden {% endif %}>
+                <label for="id_oficinaRepre" class="font-bold mb-1">Oficina:</label>
+                <select name="oficinaR" id="id_oficinaRepre"
+                    class="w-full p-1 border-2 border-[#4E232E] rounded bg-[#285C4D] text-white outline-none focus:ring-2 focus:ring-[#9F2241]">
+                    <!-- Renderizar las opciones usando las llaves del diccionario para evitar hardcoding de 32 estados -->
+                    <!-- Usamos los keys puros que envia Django, o forzamos el render a la lista estatica -->
+                    <option value="AGUASCALIENTES" {% if datosR.oficinaR == 'AGUASCALIENTES' %}selected{% endif %}>AGUASCALIENTES</option>
                         <option value="BAJA CALIFORNIA" {% if datosR.oficinaR == 'BAJA CALIFORNIA' %}selected{% endif %}>BAJA CALIFORNIA</option>
                         <option value="BAJA CALIFORNIA SUR" {% if datosR.oficinaR == 'BAJA CALIFORNIA SUR' %}selected{% endif %}>BAJA CALIFORNIA SUR</option>
                         <option value="CAMPECHE" {% if datosR.oficinaR == 'CAMPECHE' %}selected{% endif %}>CAMPECHE</option>
                         <option value="CDMX" {% if datosR.oficinaR == 'CDMX' %}selected{% endif %}>CDMX</option>
                         <option value="CHIAPAS" {% if datosR.oficinaR == 'CHIAPAS' %}selected{% endif %}>CHIAPAS</option>
-                        <option value="CHIHUAHA" {% if datosR.oficinaR == 'CHIHUAHA' %}selected{% endif %}>CHIHUAHUA</option>
+                        <option value="CHIHUAHUA" {% if datosR.oficinaR == 'CHIHUAHUA' %}selected{% endif %}>CHIHUAHUA</option>
                         <option value="COAHUILA" {% if datosR.oficinaR == 'COAHUILA' %}selected{% endif %}>COAHUILA</option>
                         <option value="COLIMA" {% if datosR.oficinaR == 'COLIMA' %}selected{% endif %}>COLIMA</option>
                         <option value="DURANGO" {% if datosR.oficinaR == 'DURANGO' %}selected{% endif %}>DURANGO</option>
@@ -114,447 +64,197 @@
                         <option value="VERACRUZ" {% if datosR.oficinaR == 'VERACRUZ' %}selected{% endif %}>VERACRUZ</option>
                         <option value="YUCATÁN" {% if datosR.oficinaR == 'YUCATÁN' %}selected{% endif %}>YUCATÁN</option>
                         <option value="ZACATECAS" {% if datosR.oficinaR == 'ZACATECAS' %}selected{% endif %}>ZACATECAS</option>
-
-                    </select><br>
-                </div>
-                </p>
-                
-                <p>
-                    <div class="form-group">
-                    <input type="hidden" name="idRescate" value="{{datosR.idRescate}}" required="" id="id_idRescate">
-                    </div>
-                </p>
-        
-                <p>
-                    <div class="form-group">
-                    <input type="hidden" name="fecha" value="{{datosR.fecha}}" required="" id="id_fecha">
-                </div>
-                </p>
-                
-                <p>
-                    <label for="id_hora">Hora:</label>
-                    <input type="time" name="hora" value="{{datosR.hora}}" placeholder="hrs:mins" required="" id="id_hora">
-                </p>
-                
-                <p>
-                    <label for="id_tipo_punto">Tipo de punto de Rescate:</label>
-                    <select name="tipo_punto" id="id_tipo_punto">
-                        {% for val in tiposPNombre %}
-                            <option value="{{val}}">{{val}}</option>
-                        {% endfor %}
-                    </select>
-                    
-                </p>
-                
-                <p>
-                    <label for="id_puntoEstra">Nombre punto de Rescate:</label>
-                    <select name="puntoEstra" id="id_puntoEstra">
-                    </select>
-                </p>
-                
-                <p>
-                    <label for="id_nacionalidad">Nacionalidad:</label>
-                    <select name="nacionalidad" id="id_nacionalidad">
-                    </select>
-                </p>
-                
-                
-                <p>
-                    <label for="id_nombre">Nombre:</label>
-                    <input type="text" name="nombre" value="{{datosR.nombre}}" maxlength="100" required="" id="id_nombre">
-                </p>
-                
-                
-                <p>
-                    <label for="id_apellidos">Apellidos:</label>
-                    <input type="text" name="apellidos" value="{{datosR.apellidos}}" maxlength="150" required="" id="id_apellidos">
-                </p>
-                
-                
-                <p>
-                    <label for="id_parentesco">Parentesco:</label>
-                    <input type="text" name="parentesco" value="{{datosR.parentesco}}" maxlength="50" id="id_parentesco">
-                </p>
-                
-                
-                <p>
-                    <label for="id_fechaNacimiento">Fecha de Nacimiento:</label>
-                    <input type="date" name="fechaNacimiento" value="{{datosR.fechaNacimiento}}" required="" id="id_fechaNacimiento" min="1920-01-01">
-                </p>
-                
-                
-                <p>
-                    <label for="id_sexo">Sexo: :</label>
-                    <select name="sexo" id="id_sexo">
-                        <option value="True">Hombre</option>
-                        
-                        <option value="False">Mujer</option>
-                    </select>
-                </p>
-                
-                
-                <p>
-                    <label for="id_embarazo">Embarazo: :</label>
-                    <select name="embarazo" id="id_embarazo">
-                        <option value="True">Si</option>
-                        
-                        <option value="False">No</option>
-                    </select>
-                </p>
-                
-                
-                <p>
-                    <label for="id_numFamilia">Numero de Familia:</label>
-                    <input type="number" name="numFamilia" value="{{datosR.numFamilia}}" required="" id="id_numFamilia">
-                </p>
-                <div class="form-group">
-                <p class="py-4">
-                    <input class="py-2 px-2 bg-teal-600 rounded-xl text-white" id="fo" type="submit" value="Actualizar datos">
-                </p>
+                </select>
+                <label for="id_fecha" class="font-bold mb-1">Fecha:</label>
+                <input type="text" name="fecha" value="{{datosR.fecha}}" id="id_fecha">
             </div>
-            </form>
-        </div>
-    </div>
 
-    <script>
-
-        var aero = {{ res_aero|safe }};
-        var carre = {{ res_carre|safe }};
-        var central = {{ res_central|safe }};
-        var ferro = {{ res_ferro|safe }};
-        var mun = {{ municipio|safe }};
-        var nacionalidades = {{ nacion|safe }};
-        var opc_vacias = ["Sin Información"];
-
-        var fuerza = {{ puntosEstrategicos|safe }};
-        console.log(aero);
-
-        
-        var miSelect = document.getElementById("id_tipo_punto");
-        miSelect.value = "{{datosR.tipo_punto}}";
-
-        actualizarNacio()
-        var miNac = document.getElementById("id_nacionalidad");
-        miNac.value = "{{datosR.nacionalidad}}";
-
-        var sexo = document.getElementById("id_sexo");
-        sexo.value = "{{datosR.sexo}}";
-
-        var embaraz = document.getElementById("id_embarazo");
-        embaraz.value = "{{datosR.embarazo}}";
-        
-        actualizarTipos()
-        asignarPuntoEstrategico()
-        
-
-
-
-        function asignarPuntoEstrategico() {
-            tipo_punto = document.getElementById("id_tipo_punto").value;
-
-            //aeropuerto
-            if(tipo_punto === "{{ tiposPNombre.0|escapejs }}") {
-                nom_puntos = document.getElementById("id_puntoEstra");
-
-                nom_puntos.value = "{{ datosR.puntoEstra|escapejs }}";
-            //carretero
-            } else if (tipo_punto === "{{tiposPNombre.1}}"){
-
-                nom_puntos = document.getElementById("id_puntoEstra");
-                nom_puntos.value = "{{datosR.puntoEstra|escapejs }}";
-            //central de autobus
-            } else if (tipo_punto === "{{tiposPNombre.2}}"){
-
-                nom_puntos = document.getElementById("id_puntoEstra");
-                nom_puntos.value = "{{datosR.puntoEstra|escapejs }}";
-            //casa de seguridad y hotel
-            } else if (tipo_punto === "{{tiposPNombre.3}}" || tipo_punto === "{{tiposPNombre.5}}"){
-
-                nom_puntos = document.getElementById("id_puntoEstra");
-                nom_puntos.value = "{{datosR.puntoEstra|escapejs }}";
-            //ferrocarril
-            } else if (tipo_punto === "{{tiposPNombre.4}}"){
-
-                nom_puntos = document.getElementById("id_puntoEstra");
-                nom_puntos.value = "{{datosR.puntoEstra|escapejs }}";
-            //puestos a disposición y voluntarios
-            } else if (tipo_punto === "{{tiposPNombre.6}}" || tipo_punto === "{{tiposPNombre.7}}"){
-
-                nom_puntos = document.getElementById("id_puntoEstra");
-                nom_puntos.value = "Sin Información";
-            }
-        }
-
-        function actualizarTipos() {
-            tipo_punto = document.getElementById("id_tipo_punto").value;
-            nombres_puntos = document.getElementById("id_puntoEstra");
-            nombres_puntos.innerHTML = ""
-
-            if(tipo_punto === "{{tiposPNombre.0}}"){
-                for (var i = 0; i < aero.length; i++) {
-                    agregarOpcion(nombres_puntos, aero[i], aero[i])
-                }
-            } else if (tipo_punto === "{{tiposPNombre.1}}"){
-                for (var i = 0; i < carre.length; i++) {
-                    agregarOpcion(nombres_puntos, carre[i], carre[i])
-                } 
-            } else if (tipo_punto === "{{tiposPNombre.2}}"){
-                for (var i = 0; i < central.length; i++) {
-                    agregarOpcion(nombres_puntos, central[i], central[i])
-                } 
-            } else if (tipo_punto === "{{tiposPNombre.3}}" || tipo_punto === "{{tiposPNombre.5}}"){
-                for (var i = 0; i < mun.length; i++) {
-                    agregarOpcion(nombres_puntos, mun[i], mun[i])
-                } 
-            } else if (tipo_punto === "{{tiposPNombre.4}}"){
-                for (var i = 0; i < ferro.length; i++) {
-                    agregarOpcion(nombres_puntos, ferro[i], ferro[i])
-                } 
-            } else if (tipo_punto === "{{tiposPNombre.6}}" || tipo_punto === "{{tiposPNombre.7}}"){
-                for (var i = 0; i < opc_vacias.length; i++) {
-                    agregarOpcion(nombres_puntos, opc_vacias[i], opc_vacias[i])
-                } 
-            }
-        }
-
-        function actualizarNacio(){
-            selec_nac = document.getElementById("id_nacionalidad");
-            selec_nac.innerHTML = ""
-
-            for (var i = 0; i < nacionalidades.length; i++) {
-                agregarOpcion(selec_nac, nacionalidades[i], nacionalidades[i])
-            }
-
-        }
-
-        function agregarOpcion(select, valor, texto) {
-            var opcion = document.createElement("option");
-            opcion.value = valor;
-            opcion.text = texto;
-            select.add(opcion);
-          }
-
-        //   document.getElementById('id_oficinaRepre').addEventListener('change', function() {
-        //     var selectedValue = this.value;
-        //     console.log(selectedValue);
-            
-        //   });
- 
-    // Define los datos de los puntos estratégicos y de internación
-    var datosPuntosEstrategicos = {{ puntosEstrategicos|safe }};
-    var datosPuntosInternacion = {{ puntosInternacion|safe }};
-    var datosMunicipios = {{ municipios|safe }};
-
-
-    // Función para actualizar el nombre del punto
-    function actualizarNombrePunto() {
-        var oficina = document.getElementById("id_oficinaRepre").value;
-        var tipoPunto = document.getElementById("id_tipo_punto").value;
-        var nombrePuntoSelect = document.getElementById("id_puntoEstra");
-
-         //aeropuerto
-         if(tipoPunto === "{{tiposPNombre.0}}"){
-            if(datosPuntosEstrategicos[oficina]['Aeropuerto'] || datosPuntosInternacion[oficina]['AEREOS']){
-                let datosAeropuerto = datosPuntosEstrategicos[oficina]['Aeropuerto'];
-            let datosAereos = datosPuntosInternacion[oficina]['AEREOS'];
-
-            let datosCombinados = "";
-
-            if (datosAeropuerto && datosAereos) {
-                datosCombinados = [...datosAeropuerto, ...datosAereos];
-            } else if (datosAeropuerto) {
-                datosCombinados = datosAeropuerto;
-            } else if (datosAereos) {
-                datosCombinados = datosAereos;
-            }
-
-            let datosCombinadosString = datosCombinados.join('|||');
-
-            console.log("oficina");
-            console.log(oficina);
-            console.log("datosAeropuerto");
-            console.log(datosAeropuerto);
-            console.log("datosAereos");
-            console.log(datosAereos);
-            console.log("datosCombinados");
-            console.log(datosCombinadosString);
-
-            let nomPuntos = document.getElementById("id_puntoEstra");
-            nomPuntos.innerHTML = '';
-
-            let opciones = datosCombinadosString.split('|||');
-            opciones.forEach(opcion => {
-                let option = document.createElement('option');
-                option.text = opcion;
-                nomPuntos.add(option);
-            });
-            }else{
-                let nomPuntos = document.getElementById("id_puntoEstra");
-                nomPuntos.innerHTML = '';
-            }
-
-
-
-        //carretero
-        } else if (tipoPunto === "{{tiposPNombre.1}}"){
-            if(datosPuntosEstrategicos[oficina]['Carretero'] || datosPuntosInternacion[oficina]['TERRESTRES']){
-                let datosCarretero = datosPuntosEstrategicos[oficina]['Carretero'];
-                let datosTERRESTRES = datosPuntosInternacion[oficina]['TERRESTRES'];
-
-                let datosCombinados = "";
-
-                if (datosCarretero && datosTERRESTRES) {
-                    datosCombinados = [...datosCarretero, ...datosTERRESTRES];
-                } else if (datosCarretero) {
-                    datosCombinados = datosCarretero;
-                } else if (datosTERRESTRES) {
-                    datosCombinados = datosTERRESTRES;
-                }
-
-                let datosCombinadosString = datosCombinados.join('|||');
-
-                console.log("oficina");
-                console.log(oficina);
-                console.log("datosCarretero");
-                console.log(datosCarretero);
-                console.log("datosTERRESTRES");
-                console.log(datosTERRESTRES);
-                console.log("datosCombinados");
-                console.log(datosCombinadosString);
-
-                let nomPuntos = document.getElementById("id_puntoEstra");
-                nomPuntos.innerHTML = '';
-
-                let opciones = datosCombinadosString.split('|||');
-                opciones.forEach(opcion => {
-                    let option = document.createElement('option');
-                    option.text = opcion;
-                    nomPuntos.add(option);
-                });
-            }else{
-                let nomPuntos = document.getElementById("id_puntoEstra");
-                nomPuntos.innerHTML = '';
-            }
-            
-
-
-
-
-        //central de autobus
-        } else if (tipoPunto === "{{tiposPNombre.2}}"){
-
-            if(datosPuntosEstrategicos[oficina]['Central de autobús']){
-                let datosCentral = datosPuntosEstrategicos[oficina]['Central de autobús'];
-                datosCentral = datosCentral.join('|||');
-
-                console.log("oficina");
-                console.log(oficina);
-                console.log("datosCentral");
-                console.log(datosCentral);
-
-                let nomPuntos = document.getElementById("id_puntoEstra");
-                nomPuntos.innerHTML = '';
-
-                let opciones = datosCentral.split('|||');
-                opciones.forEach(opcion => {
-                    let option = document.createElement('option');
-                    option.text = opcion;
-                    nomPuntos.add(option);
-                });
-            }else{
-                let nomPuntos = document.getElementById("id_puntoEstra");
-                nomPuntos.innerHTML = '';
-            }
-            
-
-        //casa de seguridad y hotel
-        } else if (tipoPunto === "{{tiposPNombre.3}}" || tipoPunto === "{{tiposPNombre.5}}"){
-            if(datosMunicipios[oficina]){
-                let datosMun = datosMunicipios[oficina];
-                datosMun = datosMun.join('|||');
-
-                console.log("oficina");
-                console.log(oficina);
-                console.log("datosMunicipios");
-                console.log(datosMun);
-
-                let nomPuntos = document.getElementById("id_puntoEstra");
-                nomPuntos.innerHTML = '';
-
-                let opciones = datosMun.split('|||');
-                opciones.forEach(opcion => {
-                    let option = document.createElement('option');
-                    option.text = opcion;
-                    nomPuntos.add(option);
-            });
-            }else{
-                let nomPuntos = document.getElementById("id_puntoEstra");
-                nomPuntos.innerHTML = '';
-            }
-            
-
-        //ferrocarril
-        } else if (tipoPunto === "{{tiposPNombre.4}}"){
-
-            if(datosPuntosEstrategicos[oficina]['Ferroviario']){
-                let datosferrocarril = datosPuntosEstrategicos[oficina]['Ferroviario'];
-                datosferrocarril = datosferrocarril.join('|||');
-
-                console.log("oficina");
-                console.log(oficina);
-                console.log("datosferrocarril");
-                console.log(datosferrocarril);
-
-                let nomPuntos = document.getElementById("id_puntoEstra");
-                nomPuntos.innerHTML = '';
-
-                let opciones = datosferrocarril.split('|||');
-                opciones.forEach(opcion => {
-                    let option = document.createElement('option');
-                    option.text = opcion;
-                    nomPuntos.add(option);
-                });
-            }else{
-                let nomPuntos = document.getElementById("id_puntoEstra");
-                nomPuntos.innerHTML = '';
-            }
-
-        //puestos a disposición y voluntarios
-        } else if (tipoPunto === "{{tiposPNombre.6}}" || tipoPunto === "{{tiposPNombre.7}}"){
-            let nomPuntos = document.getElementById("id_puntoEstra");
-            nomPuntos.innerHTML = "Sin Información";
-        }
-
-    //     // Agregar opciones al select
-    //     if (datos) {
-    //         for (var i = 0; i < datos.length; i++) {
-    //             var option = document.createElement("option");
-    //             option.text = datos[i];
-    //             option.value = datos[i];
-    //             nombrePuntoSelect.appendChild(option);
-    //         }
-    //     }
-     }
-
-    // Llamar a la función cuando se cambie la oficina o el tipo de punto
-    document.getElementById("id_oficinaRepre").addEventListener("change", actualizarNombrePunto);
-    document.getElementById("id_tipo_punto").addEventListener("change", actualizarNombrePunto);
-
-    // Llamar a la función para configurar las opciones iniciales
-    // actualizarNombrePunto();
-
-
-    </script> 
-    
-    {% comment %} <div class="grow">
-        <form method="post" action="{% url 'mostrar' %}"  enctype="multipart/form-data">{% csrf_token %}
-            {{form.as_p}}
-            <p class="py-4">
-                <input class="py-2 px-2 bg-teal-600 rounded-xl text-white" type="submit" value="Actualizar datos"/>
-            </p>
+            <div class="flex flex-col">
+                <label for="id_hora" class="font-bold mb-1">Hora:</label>
+                <input type="time" name="hora" value="{{datosR.hora}}" required id="id_hora"
+                    class="w-full p-1 border-2 border-[#4E232E] rounded bg-[#285C4D] text-white [color-scheme:dark]">
+            </div>
+
+            <div class="flex flex-col">
+                <label for="id_tipo_punto" class="font-bold mb-1">Tipo de punto de Rescate:</label>
+                <select name="tipo_punto" id="id_tipo_punto"
+                    class="w-full p-1 border-2 border-[#4E232E] rounded bg-[#285C4D] text-white">
+                    {% for val in tiposPNombre %}
+                    <option value="{{val}}" {% if datosR.tipo_punto == val %}selected{% endif %}>{{val}}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="flex flex-col">
+                <label for="id_puntoEstra" class="font-bold mb-1">Nombre punto de Rescate:</label>
+                <select name="puntoEstra" id="id_puntoEstra"
+                    class="w-full p-1 border-2 border-[#4E232E] rounded bg-[#285C4D] text-white">
+                    <!-- Llenado por Javascript -->
+                </select>
+            </div>
+
+            <div class="flex flex-col">
+                <label for="id_nacionalidad" class="font-bold mb-1">Nacionalidad:</label>
+                <select name="nacionalidad" id="id_nacionalidad"
+                    class="w-full p-1 border-2 border-[#4E232E] rounded bg-[#285C4D] text-white">
+                    {% for val in nacion %}
+                    <option value="{{val}}" {% if datosR.nacionalidad == val %}selected{% endif %}>{{val}}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="flex flex-col">
+                <label for="id_nombre" class="font-bold mb-1">Nombre:</label>
+                <input type="text" name="nombre" value="{{datosR.nombre}}" maxlength="100" required id="id_nombre"
+                    class="w-full p-1 border-2 border-[#4E232E] rounded bg-[#285C4D] text-white">
+            </div>
+
+            <div class="flex flex-col">
+                <label for="id_apellidos" class="font-bold mb-1">Apellidos:</label>
+                <input type="text" name="apellidos" value="{{datosR.apellidos}}" maxlength="150" required
+                    id="id_apellidos" class="w-full p-1 border-2 border-[#4E232E] rounded bg-[#285C4D] text-white">
+            </div>
+
+            <div class="flex flex-col">
+                <label for="id_parentesco" class="font-bold mb-1">Parentesco:</label>
+                <input type="text" name="parentesco" value="{{datosR.parentesco|default_if_none:''}}" maxlength="50"
+                    id="id_parentesco" class="w-full p-1 border-2 border-[#4E232E] rounded bg-[#285C4D] text-white">
+            </div>
+
+            <div class="flex flex-col">
+                <label for="id_fechaNacimiento" class="font-bold mb-1">Fecha de Nacimiento:</label>
+                <input type="date" name="fechaNacimiento" value="{{datosR.fechaNacimiento}}" required
+                    id="id_fechaNacimiento" min="1920-01-01"
+                    class="w-full p-1 border-2 border-[#4E232E] rounded bg-[#285C4D] text-white [color-scheme:dark]">
+            </div>
+
+            <div class="flex flex-col">
+                <label for="id_sexo" class="font-bold mb-1">Sexo:</label>
+                <select name="sexo" id="id_sexo"
+                    class="w-full p-2.5 border-2 border-[#4E232E] rounded bg-[#285C4D] text-white">
+                    <option value="True" {% if datosR.sexo == True or datosR.sexo == 'True' %}selected{% endif %}>Hombre
+                    </option>
+                    <option value="False" {% if datosR.sexo == False or datosR.sexo == 'False' %}selected{% endif %}>Mujer
+                    </option>
+                </select>
+            </div>
+
+            <div class="flex flex-col">
+                <label for="id_embarazo" class="font-bold mb-1">Embarazo:</label>
+                <select name="embarazo" id="id_embarazo"
+                    class="w-full p-2.5 border-2 border-[#4E232E] rounded bg-[#285C4D] text-white">
+                    <option value="True" {% if datosR.embarazo == True or datosR.embarazo == 'True' %}selected{% endif %}>Si
+                    </option>
+                    <option value="False" {% if datosR.embarazo == False or datosR.embarazo == 'False' %}selected{% endif
+                        %}>No</option>
+                </select>
+            </div>
+
+            <div class="flex flex-col">
+                <label for="id_numFamilia" class="font-bold mb-1">Numero de Familia:</label>
+                <input type="number" name="numFamilia" value="{{datosR.numFamilia}}" required id="id_numFamilia"
+                    class="w-full p-2.5 border-2 border-[#4E232E] rounded bg-[#285C4D] text-white">
+            </div>
+
+            <div class="pt-4 text-center">
+                <button type="submit"
+                    class="w-full bg-[#C30E2E] hover:bg-[#9F2241] text-white font-bold py-3 px-4 rounded transition-colors shadow-md">
+                    Actualizar datos
+                </button>
+                <!-- Agregamos botón cancelar que retrocede la página de donde vino -->
+                <button type="button" onclick="history.back()"
+                    class="w-full mt-3 bg-gray-500 hover:bg-gray-600 text-white font-bold py-3 px-4 rounded transition-colors shadow-md">
+                    Cancelar
+                </button>
+            </div>
         </form>
-    </div> {% endcomment %}
+    </div>
+</div>
 
-    {% comment %} <h1 class="text-xl">Dashboard de {{usuario.0.oficinaR}} </h1> {% endcomment %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Leer diccionarios embebidos de Django json_script
+        const estraAll = JSON.parse(document.getElementById('datosEstrategicos').textContent);
+        const interAll = JSON.parse(document.getElementById('datosInternacion').textContent);
+        const munAll = JSON.parse(document.getElementById('datosMunicipios').textContent);
+
+        const selectOficina = document.getElementById('id_oficinaRepre');
+        const selectTipo = document.getElementById('id_tipo_punto');
+        const selectPunto = document.getElementById('id_puntoEstra');
+
+        const inicialPuntoEstra = "{{ datosR.puntoEstra|escapejs }}".trim();
+
+        function getPuntosParaTipo(oficina, tipoSeleccionado) {
+            let opciones = [];
+
+            if (tipoSeleccionado === "aeropuerto") {
+                const est = (estraAll[oficina] && estraAll[oficina]['Aeropuerto']) || [];
+                const int = (interAll[oficina] && interAll[oficina]['AEREOS']) || [];
+                opciones = [...est, ...int];
+            }
+            else if (tipoSeleccionado === "carretero") {
+                const est = (estraAll[oficina] && estraAll[oficina]['Carretero']) || [];
+                const int = (interAll[oficina] && interAll[oficina]['TERRESTRES']) || [];
+                opciones = [...est, ...int];
+            }
+            else if (tipoSeleccionado === "central de autobus") {
+                opciones = (estraAll[oficina] && estraAll[oficina]['Central de autobús']) || [];
+            }
+            else if (tipoSeleccionado === "disuadidos" || tipoSeleccionado === "visitas de verificación") {
+                opciones = munAll[oficina] || [];
+            }
+            else if (tipoSeleccionado === "ferrocarril") {
+                opciones = (estraAll[oficina] && estraAll[oficina]['Ferroviario']) || [];
+            }
+            else if (tipoSeleccionado === "puestos a disposición" || tipoSeleccionado === "voluntarios") {
+                opciones = ["Sin Información"];
+            }
+
+            return [...new Set(opciones)];
+        }
+
+        function poblarPuntos(opcionesArray, preseleccionar) {
+            selectPunto.innerHTML = "";
+
+            if (opcionesArray.length === 0) {
+                const opt = document.createElement('option');
+                opt.value = "";
+                opt.text = "Sin opciones disponibles";
+                selectPunto.add(opt);
+                return;
+            }
+
+            opcionesArray.forEach(val => {
+                const opt = document.createElement('option');
+                opt.value = val;
+                opt.text = val;
+                if (val.trim() === preseleccionar) {
+                    opt.selected = true;
+                }
+                selectPunto.add(opt);
+            });
+        }
+
+        function onSelectChange() {
+            const tipo = selectTipo.value;
+            const oficina = selectOficina.value;
+            const puntosDisponibles = getPuntosParaTipo(oficina, tipo);
+
+            poblarPuntos(puntosDisponibles, inicialPuntoEstra);
+        }
+
+        selectOficina.addEventListener('change', () => {
+            // al cambiar de oficina, reseteamos el valor inicial de punto estrategico si hubiera
+            poblarPuntos(getPuntosParaTipo(selectOficina.value, selectTipo.value), "");
+        });
+        selectTipo.addEventListener('change', () => {
+            poblarPuntos(getPuntosParaTipo(selectOficina.value, selectTipo.value), "");
+        });
+
+        // Poblar al inicio con el valor inicial cargado de la DB
+        onSelectChange();
+    });
+</script>
+    {% endif %}
     {% endif %}
 {% endblock content %}

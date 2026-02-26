@@ -79,22 +79,14 @@ def reincidentes_xdia_ajax(request):
         fecha = request.GET.get('fecha', '')
 
         # Convertir el formato de llegada a formato de hora
-        fechaIN = datetime.strptime(f"{fecha}", "%Y-%m-%d")
-
-        # Descomentar para una fecha especifica
-        # fechaIN = datetime.strptime(f"2024-12-01", "%Y-%m-%d")
-        # fechaFIN = datetime.strptime(f"2024-12-15", "%Y-%m-%d")
-
-        # fecha_year_less = fechaIN - timedelta(days=365)
-
-        # array_fechasAnual = [(fechaIN + timedelta(days=d)).strftime("%d-%m-%y") for d in range((365 + 1))]
+        try:
+            fechaIN = datetime.strptime(f"{fecha}", "%Y-%m-%d")
+        except ValueError:
+            return JsonResponse({'error': 'Formato de fecha inválido'}, status=400)
 
         array_fechasDia = [(fechaIN + timedelta(days=d)).strftime("%d-%m-%y") for d in range((fechaIN - fechaIN).days + 1)]
 
-         # Descomentar para una fecha especifica
-        # array_fechasDia = [(fechaIN + timedelta(days=d)).strftime("%d-%m-%y") for d in range((fechaFIN - fechaIN).days + 1)]
-
-        # Rescates por dia de las OR sin chiapas y tabasco
+        # Rescates por dia de las OR sin chiapas y tabasco (NOTA: tabasco no se excluye en original, solo chiapas)
         rescates_por_dia = RescatePunto.objects.filter(fecha__in= array_fechasDia).exclude(oficinaRepre__in=["CHIAPAS"]) \
             .values('nombre', 'apellidos', 'iso3', 'puntoEstra', 'oficinaRepre', 'fecha', 'sexo', 'fechaNacimiento') \
             .order_by('iso3')
@@ -106,54 +98,53 @@ def reincidentes_xdia_ajax(request):
             .values('nombre', 'apellidos', 'iso3', 'puntoEstra', 'oficinaRepre', 'fecha', 'sexo', 'fechaNacimiento') \
             .order_by('iso3')
         
-        total_dia = rescates_por_dia.count() + rescates_por_dia_CHIS.count()
-
         datosCHIS = list(rescates_por_dia_CHIS)
+        total_dia = len(datosORs) + len(datosCHIS)
 
-    # Valores duplicados desde un año atras
-        valores_duplicados = RescatePunto.objects.all() \
-            .values('nombre', 'apellidos', 'iso3') \
-            .annotate(veces=Count('idRescate')) \
-            .filter(veces__gt=1) \
-            .order_by('-veces')
+        # OPTIMIZACION: Extraer solo los nombres, apellidos e iso3 de las personas rescatadas HOY
+        # para no tener que buscar duplicados sobre toda la base de datos completa.
+        personas_hoy = set()
+        for dato in datosORs + datosCHIS:
+            # Utilizamos los campos exactos con los que haremos match
+            personas_hoy.add((dato['nombre'], dato['apellidos'], dato['iso3']))
+
+        valores_duplicados1year = {}
         
-        # print(valores_duplicados.count())
+        if personas_hoy:
+            # Crear predicados OR para filtrar sólo a este pequeño grupo de personas
+            from django.db.models import Q
+            query = Q()
+            for nombre, apellidos, iso3 in personas_hoy:
+                query |= Q(nombre=nombre, apellidos=apellidos, iso3=iso3)
 
-        valores_duplicados1year = {
-            (valor['nombre'], valor['apellidos'], valor['iso3']): valor['veces']
-            for valor in valores_duplicados
-        }
+            # Buscar coincidencias exactas y contar cuántas veces han sido rescatadas
+            # sólo evaluamos a las personas del día actual
+            valores_duplicados = RescatePunto.objects.filter(query) \
+                .values('nombre', 'apellidos', 'iso3') \
+                .annotate(veces=Count('idRescate')) \
+                .filter(veces__gt=1)
 
-        # Comparar cada entrada de datos1 con valores_unicos y obtener el valor de veces si existe
+            for valor in valores_duplicados:
+                valores_duplicados1year[(valor['nombre'], valor['apellidos'], valor['iso3'])] = valor['veces']
+
         reincidentesOR = []
         rescatesNuevos = []
-        for dato in datosORs:
+        
+        # Procesamiento unificado de las ORs y Chiapas
+        for dato in datosORs + datosCHIS:
             clave = (dato['nombre'], dato['apellidos'], dato['iso3'])
-            veces = valores_duplicados1year.get(clave)  # Buscar en el diccionario
-            if veces is not None:
-                # print(veces)
+            # Las veces que el ORM encontró coincidencia histórica
+            veces = valores_duplicados1year.get(clave, 0)
+            
+            if veces > 1:
+                # Si tiene más de 1 rescate en el histórico, es reincidente
                 reincidentesOR.append({**dato, 'veces': veces})
             else:
+                # Es primera vez o los datos no empatan (0 o 1 rescate)
                 rescatesNuevos.append({**dato, 'veces': 0})
-            # else:
-            #     reincidentesOR.append({**dato, 'veces': 1})  # Si no existe, agregar 'veces': 0 o lo que prefieras
-
-        # Comparar cada entrada de datos1 con valores_unicos y obtener el valor de veces si existe
-        for dato in datosCHIS:
-            clave = (dato['nombre'], dato['apellidos'], dato['iso3'])
-            veces = valores_duplicados1year.get(clave)  # Buscar en el diccionario
-            if veces is not None:
-                # print(veces)
-                reincidentesOR.append({**dato, 'veces': veces + 1})
-            else:
-                reincidentesOR.append({**dato, 'veces': 1})  # Si no existe, agregar 'veces': 0 o lo que prefieras
 
         conteo = len(reincidentesOR)
-        # # Crear el archivo Excel
-        # ruta_archivo_excel = os.path.join(os.getcwd(), f'reincidetes_{fechaIN.day:02}_{fechaIN.month:02}_Pais.xlsx')
         
-        # print(conteo)
-
         data = [
             {
                 'fecha': fecha,
