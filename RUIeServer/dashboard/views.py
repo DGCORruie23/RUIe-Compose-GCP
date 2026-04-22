@@ -105,6 +105,8 @@ def datos_fechas(request):
                 'form': form,
                 'values' : valores,
                 'fecha_P' : array_fechas,
+                'fecha_inicio_api': fechaI,
+                'fecha_fin_api': fechaF,
             }
 
             return render(request, template, context=data)
@@ -154,6 +156,8 @@ def tabla_registros(request, year=None, month=None, day=None):
         'form': form,
         'values' : valores,
         'fecha_P' : fechaR,
+        'fecha_inicio_api': f"{year}-{month:02d}-{day:02d}",
+        'fecha_fin_api': f"{year}-{month:02d}-{day:02d}",
     }
 
     return render(request, template, context=data)
@@ -338,6 +342,8 @@ def mostrarData(request):
                 'form': form,
                 'values' : valores,
                 'fecha_P' : fechaR,
+                'fecha_inicio_api': f"{year}-{int(mes):02d}-{int(dia):02d}",
+                'fecha_fin_api': f"{year}-{int(mes):02d}-{int(dia):02d}",
                 }
 
                 return render(request, template, context=data)

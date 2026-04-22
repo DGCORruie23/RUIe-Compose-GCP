@@ -45,14 +45,15 @@ Panel de Control de Administrador
 
     <label class="px-2 py-2 mx-3 text-inm-rojo-200" id="totales"></label>
 
-    <form action="{% url 'descarga_excel' %}" method="post">
+    <form onsubmit="return descargarExcelOptimizado(event, 'downloadStatus')">
         {% csrf_token %}
         <input name="fechaDescarga" type="hidden" value="{{fecha_P}}" id="id_fechaDescarga">
-        <input name="oficina" type="hidden" value="{{usuario.0.oficinaR}}" id="id_oficina">
+        <input name="oficina" type="hidden" value="TODAS" id="id_oficina">
         <button type="submit"
             class="py-2 px-6 bg-blue-400 rounded-xl text-white hover:text-inm-verde-100">Descargar</button>
     </form>
 </div>
+<div id="downloadStatus" style="display: none;" class="mx-auto max-w-lg mb-4"></div>
 
 <form method="post" action="{% url 'eliminar_varios_registros' %}" id="formEliminar">
     {% csrf_token %}
@@ -586,6 +587,116 @@ Panel de Control de Administrador
 
         rows.forEach(row => tbody.appendChild(row));
         closeFilter();
+    }
+</script>
+
+<script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+<script>
+    async function descargarExcelOptimizado(event, statusId) {
+        event.preventDefault();
+        
+        const fechaInicio = "{{fecha_inicio_api}}";
+        const fechaFin = "{{fecha_fin_api}}";
+        const oficinaR = document.getElementById('id_oficina').value || 'TODAS';
+
+        const statusDiv = document.getElementById(statusId);
+        statusDiv.style.display = 'block';
+        statusDiv.className = 'mt-4 p-4 bg-blue-100 text-blue-800 rounded-xl text-center border-2 border-blue-300 shadow-md';
+        statusDiv.innerHTML = '<strong>Iniciando descarga optimizada...</strong>';
+
+        const start = new Date(fechaInicio + 'T00:00:00');
+        const end = new Date(fechaFin + 'T00:00:00');
+        const totalDays = Math.ceil((end - start) / (1000 * 60 * 60 * 24)) + 1;
+
+        let allRecords = [];
+        let totalRowsAccumulated = 0;
+        let chunkPart = 1;
+        const MAX_CHUNK_ROWS = 100000;
+
+        const headers = [
+            "Oficina Representación", "Fecha", "Hora", "Nombre Agente", "Aeropuerto", "Carretero", 
+            "Tipo Vehículo", "Línea Autobús", "Número Económico", "Placas", "Vehículo Asegurado", 
+            "Casa Seguridad", "Central Autobús", "Ferrocarril", "Empresa", "Hotel", 
+            "Nombre Hotel", "Puestos a Disposición", "Juez Calificador", "Reclusorio", 
+            "Policía Federal", "DIF", "Policía Estatal", "Policía Municipal", 
+            "Guardia Nacional", "Fiscalía", "Otras Autoridades", "Voluntarios", 
+            "Otro", "Presuntos Delincuentes", "Num Presuntos Delincuentes", "Municipio", 
+            "Punto Estratégico", "Nacionalidad", "ISO3", "Nombre", "Apellidos", 
+            "No Identidad", "Parentesco", "Fecha Nacimiento", "Sexo", "Embarazo", 
+            "Num Familia", "Edad"
+        ];
+
+        for (let d = 0; d < totalDays; d++) {
+            const currentDate = new Date(start);
+            currentDate.setDate(currentDate.getDate() + d);
+            const dateStr = currentDate.toISOString().split('T')[0];
+
+            statusDiv.innerHTML = `<strong>Procesando descarga:</strong><br>Día ${d + 1} de ${totalDays} (${dateStr})`;
+
+            try {
+                const params = new URLSearchParams({ fecha: dateStr, oficinaR: oficinaR });
+                const response = await fetch(`/info/api/rescates_json?${params.toString()}`);
+                const data = await response.json();
+
+                if (data.error) {
+                    console.error("Error en fecha " + dateStr + ":", data.error);
+                    continue;
+                }
+
+                if (Array.isArray(data) && data.length > 0) {
+                    const formattedRecords = data.map(v => [
+                        v.oficinaRepre, v.fecha, v.hora, v.nombreAgente,
+                        v.aeropuerto ? "1" : "", v.carretero ? "1" : "",
+                        v.tipoVehic, v.lineaAutobus, v.numeroEcono, v.placas,
+                        v.vehiculoAseg ? "1" : "", v.casaSeguridad ? "1" : "",
+                        v.centralAutobus ? "1" : "", v.ferrocarril ? "1" : "",
+                        v.empresa, v.hotel ? "1" : "", v.nombreHotel,
+                        v.puestosADispo ? "1" : "", v.juezCalif ? "1" : "",
+                        v.reclusorio ? "1" : "", v.policiaFede ? "1" : "",
+                        v.dif ? "1" : "", v.policiaEsta ? "1" : "",
+                        v.policiaMuni ? "1" : "", v.guardiaNaci ? "1" : "",
+                        v.fiscalia ? "1" : "", v.otrasAuto ? "1" : "",
+                        v.voluntarios ? "1" : "", v.otro ? "1" : "",
+                        v.presuntosDelincuentes ? "1" : "", 
+                        v.numPresuntosDelincuentes !== 0 ? v.numPresuntosDelincuentes : "",
+                        v.municipio, v.puntoEstra, v.nacionalidad, v.iso3,
+                        v.nombre, v.apellidos, v.noIdentidad, v.parentesco,
+                        v.fechaNacimiento, v.sexo ? "Hombre" : "Mujer",
+                        v.embarazo ? "1" : "",
+                        v.numFamilia !== 0 ? v.numFamilia : "",
+                        v.edad
+                    ]);
+
+                    allRecords = allRecords.concat(formattedRecords);
+                    totalRowsAccumulated += formattedRecords.length;
+
+                    if (allRecords.length >= MAX_CHUNK_ROWS) {
+                        downloadChunkXLSX(allRecords, headers, `Rescates_${oficinaR}_${fechaInicio}_${fechaFin}_Parte${chunkPart}.xlsx`);
+                        chunkPart++;
+                        allRecords = [];
+                    }
+                }
+            } catch (error) {
+                console.error("Error de red en fecha " + dateStr + ":", error);
+            }
+        }
+
+        if (allRecords.length > 0) {
+            downloadChunkXLSX(allRecords, headers, `Rescates_${oficinaR}_${fechaInicio}_${fechaFin}${chunkPart > 1 ? '_Parte' + chunkPart : ''}.xlsx`);
+        }
+
+        statusDiv.innerHTML = `<strong>¡Descarga completada!</strong><br>Se procesaron ${totalRowsAccumulated.toLocaleString()} registros.`;
+        statusDiv.className = "mt-4 p-4 bg-green-100 text-green-800 rounded-xl text-center border-2 border-green-300 shadow-md";
+        setTimeout(() => { statusDiv.style.display = 'none'; }, 8000);
+        
+        return false;
+    }
+
+    function downloadChunkXLSX(data, headers, fileName) {
+        const worksheet = XLSX.utils.aoa_to_sheet([headers, ...data]);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, "Rescates");
+        XLSX.writeFile(workbook, fileName);
     }
 </script>
 
