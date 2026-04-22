@@ -1,6 +1,6 @@
 services:
   web:
-    container_name: RUIEapp
+    container_name: RUIEappE
     restart: always
     build: ./RUIeServer
     command: gunicorn serverRUI.wsgi:application --bind 0.0.0.0:8000 --reload --workers 5 --threads 2 --timeout 120
@@ -20,7 +20,7 @@ services:
       - ./RUIeServer/usuario:/src/backendRUIe/usuario
 
   db:
-    container_name: dbPGruie
+    container_name: dbPGruieE
     restart: always
     image: postgres:16.4-alpine
     shm_size: 128mb
@@ -30,7 +30,7 @@ services:
       - .env.db
 
   nginx:
-    container_name: RuieNginx
+    container_name: RuieNginxE
     build: ./nginx
     # restart: always
     expose:

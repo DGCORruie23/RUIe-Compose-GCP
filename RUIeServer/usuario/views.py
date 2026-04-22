@@ -720,6 +720,31 @@ def infoFrases(request):
         serializer = FrasesGetSerializer(snippets, many=True)
         return JsonResponse(serializer.data, safe=False)
 
+@csrf_exempt
+def get_rescates_json(request):
+    if request.method == 'GET':
+        fecha = request.GET.get('fecha')
+        oficinaR = request.GET.get('oficinaR')
+        
+        if not fecha or not oficinaR:
+            return JsonResponse({'error': 'Faltan parámetros'}, status=400)
+        
+        try:
+            # Convertir fecha de YYYY-MM-DD a dd-mm-yy que es como se guarda en la DB
+            fecha_dt = datetime.strptime(fecha, "%Y-%m-%d")
+            fecha_str = fecha_dt.strftime("%d-%m-%y")
+        except ValueError:
+            return JsonResponse({'error': 'Formato de fecha inválido'}, status=400)
+
+        if oficinaR == "TODAS":
+            snippets = RescatePunto.objects.filter(fecha=fecha_str)
+        else: 
+            snippets = RescatePunto.objects.filter(fecha=fecha_str, oficinaRepre=oficinaR)
+
+
+        serializer = RescatePuntoSerializer(snippets, many=True)
+        return JsonResponse(serializer.data, safe=False)
+
 @csrf_exempt 
 def convertirU(coordenadas):
     strCoor = str(coordenadas)

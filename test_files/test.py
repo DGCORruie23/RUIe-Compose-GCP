@@ -1,9 +1,10 @@
 import os
-from django.db.models import Count
+from django.db.models import Count, Q
 from usuario.models import Usuario, Paises, EstadoFuerza, Frases, Municipios, PuntosInternacion, RescatePunto, ConteoRapidoPunto, MsgUpdate
 from datetime import date
 from datetime import *
 from openpyxl import Workbook
+
 
 #----------------------------------------------------
 # valores_duplicados = RescatePunto.objects.all() \
@@ -184,4 +185,152 @@ def exportar_excel(fecha_inicio, fecha_fin):
     wb.save(ruta_archivo_excel)
     print(f"El archivo Excel ha sido guardado en {ruta_archivo_excel}")
 
-exportar_excel(fecha_inicio = date(2024, 1, 1), fecha_fin = date(2024, 12, 31))
+
+def exportar_resc_reinc(fecha_inicio, fecha_fin):
+
+    LIMITE_POR_HOJA = 500_000
+    
+    ruta_archivo_excel_1 = os.path.join(os.getcwd(), f'test_files/Rescates_{fecha_inicio.day:02}_{fecha_inicio.month:02}_{fecha_inicio.year:02}__{fecha_fin.day:02}_{fecha_fin.month:02}_{fecha_fin.year:02}.xlsx')
+    ruta_archivo_excel_2 = os.path.join(os.getcwd(), f'test_files/Reincidentes_{fecha_inicio.day:02}_{fecha_inicio.month:02}_{fecha_inicio.year:02}__{fecha_fin.day:02}_{fecha_fin.month:02}_{fecha_fin.year:02}.xlsx')
+    
+    fechaIN = datetime.strptime(f"{fecha_inicio}", "%Y-%m-%d")
+    fechaFN = datetime.strptime(f"{fecha_fin}", "%Y-%m-%d")
+
+    # array_fechasDia = [(fechaIN + timedelta(days=d)).strftime("%d-%m-%y") for d in range((fechaFIN - fechaIN).days + 1)]
+    array_fechas = [(fechaIN + timedelta(days=d)).strftime("%d-%m-%y") for d in range((fechaFN - fechaIN).days + 1)]
+
+    # Rescates por dia de las OR sin chiapas y tabasco (NOTA: tabasco no se excluye en original, solo chiapas)
+    rescates_por_dia = RescatePunto.objects.filter(fecha__in= array_fechas).exclude(oficinaRepre__in=["CHIAPAS"]) \
+        .values('nombre', 'apellidos', 'iso3', 'puntoEstra', 'oficinaRepre', 'fecha', 'sexo', 'nacionalidad', 'edad') \
+        .order_by('iso3')
+
+    datosORs = list(rescates_por_dia)
+
+    # print(rescates_por_dia)
+
+    # Rescates por dia de la OR CHIS
+    rescates_por_dia_CHIS = RescatePunto.objects.filter(fecha__in= array_fechas, oficinaRepre="CHIAPAS") \
+        .values('nombre', 'apellidos', 'iso3', 'puntoEstra', 'oficinaRepre', 'fecha', 'sexo', 'nacionalidad', 'edad') \
+        .order_by('iso3')
+    
+    datosCHIS = list(rescates_por_dia_CHIS)
+
+    # OPTIMIZACION: Extraer solo los nombres, apellidos e iso3 de las personas rescatadas HOY
+    # para no tener que buscar duplicados sobre toda la base de datos completa.
+    personas_hoy = set()
+    for dato in datosORs + datosCHIS:
+        # Utilizamos los campos exactos con los que haremos match
+        personas_hoy.add((dato['nombre'], dato['apellidos'], dato['iso3']))
+
+    valores_duplicados1year = {}
+    
+    if personas_hoy:
+        # Crear predicados OR para filtrar sólo a este pequeño grupo de personas
+        query = Q()
+        for nombre, apellidos, iso3 in personas_hoy:
+            query |= Q(nombre=nombre, apellidos=apellidos, iso3=iso3)
+
+        # Buscar coincidencias exactas y contar cuántas veces han sido rescatadas
+        # sólo evaluamos a las personas del día actual
+        valores_duplicados = RescatePunto.objects.filter(query) \
+            .values('nombre', 'apellidos', 'iso3') \
+            .annotate(veces=Count('idRescate')) \
+            .filter(veces__gt=1)
+
+        for valor in valores_duplicados:
+            valores_duplicados1year[(valor['nombre'], valor['apellidos'], valor['iso3'])] = valor['veces']
+
+    reincidentesOR = []
+    rescatesNuevos = []
+    
+    # Procesamiento unificado de las ORs y Chiapas
+    for dato in datosORs + datosCHIS:
+        clave = (dato['nombre'], dato['apellidos'], dato['iso3'])
+        # Las veces que el ORM encontró coincidencia histórica
+        veces = valores_duplicados1year.get(clave, 0)
+        
+        if veces > 1:
+            # Si tiene más de 1 rescate en el histórico, es reincidente
+            reincidentesOR.append({**dato, 'veces': veces})
+        else:
+            # Es primera vez o los datos no empatan (0 o 1 rescate)
+            rescatesNuevos.append({**dato, 'veces': 0})
+
+    # print(reincidentesOR)
+    # print(rescatesNuevos)
+
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Hoja_1"
+
+    encabezados = ['oficinaRepre', 'fecha', 'puntoEstra', 'nacionalidad', 'nombre', 'apellidos', 'sexo', 'edad']
+    ws.append(encabezados)
+
+    fila_actual = 1
+    hoja_num = 1
+
+    for obj in reincidentesOR:
+        # Si llegamos al límite → nueva hoja
+        if fila_actual >= LIMITE_POR_HOJA:
+            hoja_num += 1
+            ws = wb.create_sheet(title=f"Hoja_{hoja_num}")
+            ws.append(encabezados)
+            fila_actual = 1
+
+        ws.append([
+            obj['oficinaRepre'],
+            obj['fecha'],
+            obj['puntoEstra'],
+            obj['nacionalidad'],
+            obj['nombre'],
+            obj['apellidos'],
+            obj['sexo'],
+            obj['edad'],
+        ])
+
+        fila_actual += 1
+
+    # Guardar el archivo
+    wb.save(ruta_archivo_excel_1)
+    print(f"El archivo Excel ha sido guardado en {ruta_archivo_excel_1}")
+
+    wb2 = Workbook()
+    ws2 = wb2.active
+    ws2.title = "Hoja_1"
+
+    ws2.append(encabezados)
+
+    fila_actual2 = 1
+    hoja_num2 = 1
+
+    for obj in rescatesNuevos:
+        # Si llegamos al límite → nueva hoja
+        if fila_actual2 >= LIMITE_POR_HOJA:
+            hoja_num2 += 1
+            ws2 = wb2.create_sheet(title=f"Hoja_{hoja_num2}")
+            ws2.append(encabezados)
+            fila_actual2 = 1
+
+        ws2.append([
+            obj['oficinaRepre'],
+            obj['fecha'],
+            obj['puntoEstra'],
+            obj['nacionalidad'],
+            obj['nombre'],
+            obj['apellidos'],
+            obj['sexo'],
+            obj['edad'],
+        ])
+
+        fila_actual2 += 1
+
+    # Guardar el archivo
+    wb2.save(ruta_archivo_excel_2)
+    print(f"El archivo Excel ha sido guardado en {ruta_archivo_excel_2}")
+
+
+
+# exportar_excel(fecha_inicio = date(2024, 1, 1), fecha_fin = date(2024, 12, 31))
+exportar_resc_reinc(fecha_inicio = date(2024, 10, 1), fecha_fin = date(2026, 3, 4))
+
+# scp -i ~/Documents/aws_keys/ruie-keys.pem ubuntu@3.15.228.198:/home/ubuntu/RUIe-Compose-GCP/SVresp260226.zip /Users/dgcor/Downloads/
