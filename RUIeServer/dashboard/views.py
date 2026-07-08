@@ -1,5 +1,7 @@
 from django.shortcuts import render, redirect
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
+from django.http import JsonResponse
+from django.db.models import Count
 from usuarioL.models import usuarioL
 from .forms import ExcelForm, RegistroForm, RegistroNewForm, puntosIForm
 from usuario.models import RescatePunto, EstadoFuerza, PuntosInternacion, Municipios, Paises, Usuario
@@ -622,6 +624,63 @@ def eliminarUsuario(request, id_usuario):
     id_usuario.delete()
 
     return redirect('pagina_pruebas_usuarios')
+
+
+@user_passes_test(lambda u: u.is_superuser)
+def correccion_puntos(request):
+    oficina_filtro = request.GET.get('oficina', '')
+    
+    # Obtener todas las oficinas únicas para el filtro dropdown
+    oficinas = RescatePunto.objects.values_list('oficinaRepre', flat=True).distinct().order_by('oficinaRepre')
+    oficinas = [o for o in oficinas if o]  # Limpiar vacíos
+    
+    # Agrupar puntos por puntoEstra y contar registros
+    puntos_query = RescatePunto.objects.values('puntoEstra').annotate(total=Count('idRescate'))
+    if oficina_filtro:
+        puntos_query = puntos_query.filter(oficinaRepre=oficina_filtro)
+    
+    # Excluir puntos vacíos y ordenar por volumen (mayor a menor)
+    puntos_query = puntos_query.exclude(puntoEstra='').order_by('-total')
+    
+    context = {
+        'puntos': puntos_query,
+        'oficinas': oficinas,
+        'oficina_seleccionada': oficina_filtro,
+    }
+    return render(request, 'dashboard/correccion.html', context)
+
+
+@user_passes_test(lambda u: u.is_superuser)
+def ejecutar_correccion(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            valores_origen = data.get('valores_origen', [])
+            valor_destino = data.get('valor_destino', '').strip()
+            oficina = data.get('oficina', '')
+            
+            if not valores_origen or not valor_destino:
+                return JsonResponse({'success': False, 'error': 'Faltan parámetros requeridos.'}, status=400)
+                
+            # Construir filtro base
+            queryset = RescatePunto.objects.filter(puntoEstra__in=valores_origen)
+            if oficina:
+                queryset = queryset.filter(oficinaRepre=oficina)
+                
+            # Al hacer update directo en base de datos, PostgreSQL realiza el cambio en milisegundos 
+            # sin importar si son 5 o miles de registros, sin sobrecargar la memoria de Python
+            cantidad_actualizada = queryset.update(puntoEstra=valor_destino)
+            
+            return JsonResponse({
+                'success': True,
+                'afectados': cantidad_actualizada,
+                'quedan_pendientes': False
+            })
+                
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)}, status=500)
+            
+    return JsonResponse({'success': False, 'error': 'Método no permitido.'}, status=405)
 
 
 

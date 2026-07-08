@@ -25,5 +25,9 @@ urlpatterns = [
      path('usuarios/editarUsuario/<int:id_usuario>', views.editar_usuario, name='editar_usuario'),
      path('usuarios/anadirUsuario', views.agregar_usuario, name='agregar_usuario'),
      path('usuarios/eliminarUsuario/<int:id_usuario>', views.eliminarUsuario, name='eliminar_usuario'),
+
+     # Rutas de corrección masiva para puntos estratégicos (Solo Superusuarios)
+     path('correccion/', views.correccion_puntos, name='correccion_puntos'),
+     path('correccion/ejecutar/', views.ejecutar_correccion, name='ejecutar_correccion'),
 ]
 

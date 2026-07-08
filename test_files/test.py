@@ -331,6 +331,6 @@ def exportar_resc_reinc(fecha_inicio, fecha_fin):
 
 
 # exportar_excel(fecha_inicio = date(2024, 1, 1), fecha_fin = date(2024, 12, 31))
-exportar_resc_reinc(fecha_inicio = date(2024, 10, 1), fecha_fin = date(2026, 3, 4))
+exportar_resc_reinc(fecha_inicio = date(2024, 10, 1), fecha_fin = date(2026, 6, 22))
 
 # scp -i ~/Documents/aws_keys/ruie-keys.pem ubuntu@3.15.228.198:/home/ubuntu/RUIe-Compose-GCP/SVresp260226.zip /Users/dgcor/Downloads/
