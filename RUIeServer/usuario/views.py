@@ -695,7 +695,7 @@ def infoPaises(request):
 @csrf_exempt
 def infoMunicipios(request):
     if request.method == 'GET':
-        snippets = Municipios.objects.all()
+        snippets = Municipios.objects.all().order_by("estado")
         serializer = MunicipiosGetSerializer(snippets, many=True)
         return JsonResponse(serializer.data, safe=False)
     
