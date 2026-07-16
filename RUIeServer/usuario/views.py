@@ -1,5 +1,5 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from django.db.models import Max, Count
+from django.db.models import Max, Count, Case, Value, When, IntegerField   
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.parsers import JSONParser
 from django.http import JsonResponse, HttpResponseRedirect, HttpResponse
@@ -694,8 +694,58 @@ def infoPaises(request):
 
 @csrf_exempt
 def infoMunicipios(request):
-    if request.method == 'GET':
-        snippets = Municipios.objects.all().order_by("estado")
+    if request.method == "GET":                                                                                                                                  
+        # 1. Definimos la lista con el orden deseado de los estados                                                                                              
+        custom_order = [                                                                                                                                         
+            "AGUASCALIENTES",                                                                                                                                    
+            "BAJA CALIFORNIA",                                                                                                                                   
+            "BAJA CALIFORNIA SUR",                                                                                                                               
+            "CAMPECHE",                                                                                                                                          
+            "COAHUILA",                                                                                                                                          
+            "COLIMA",                                                                                                                                            
+            "CHIAPAS",                                                                                                                                           
+            "CHIHUAHUA",                                                                                                                                         
+            "CDMX",                                                                                                                                              
+            "DURANGO",                                                                                                                                           
+            "GUANAJUATO",                                                                                                                                        
+            "GUERRERO",                                                                                                                                          
+            "HIDALGO",                                                                                                                                           
+            "JALISCO",                                                                                                                                           
+            "EDOMEX",                                                                                                                                            
+            "MICHOACÁN",                                                                                                                                         
+            "MORELOS",                                                                                                                                           
+            "NAYARIT",                                                                                                                                           
+            "NUEVO LEÓN",                                                                                                                                        
+            "OAXACA",                                                                                                                                            
+            "PUEBLA",                                                                                                                                            
+            "QUERÉTARO",                                                                                                                                         
+            "QUINTANA ROO",                                                                                                                                      
+            "SAN LUIS POTOSÍ",                                                                                                                                   
+            "SINALOA",                                                                                                                                           
+            "SONORA",                                                                                                                                            
+            "TABASCO",                                                                                                                                           
+            "TAMAULIPAS",                                                                                                                                        
+            "TLAXCALA",                                                                                                                                          
+            "VERACRUZ",                                                                                                                                          
+            "YUCATÁN",                                                                                                                                           
+            "ZACATECAS",                                                                                                                                         
+        ]                                                                                                                                                        
+
+        # 2. Generamos las condiciones de ordenamiento para Django
+        preserved_order = [
+            When(estado=estado_name, then=Value(i))
+            for i, estado_name in enumerate(custom_order)
+        ]
+
+        # 3. Hacemos la consulta anotando el índice dinámico y ordenando por él
+        snippets = Municipios.objects.annotate(
+            order_index=Case(
+                *preserved_order,
+                default=Value(len(custom_order)),
+                output_field=IntegerField(),
+            )
+        ).order_by("order_index")
+
         serializer = MunicipiosGetSerializer(snippets, many=True)
         return JsonResponse(serializer.data, safe=False)
     
