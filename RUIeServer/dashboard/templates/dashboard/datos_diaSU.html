@@ -97,7 +97,6 @@ Panel de Control de Administrador
                 <tr>
                     <th class="py-3.5 px-4 text-center w-12"><input type="checkbox" id="cboxAll" class="rounded border-slate-300 focus:ring-[#4E232E] h-4 w-4 text-[#4E232E]" /></th>
                     <th class="py-3.5 px-3 font-semibold text-xs uppercase text-center w-12">#</th>
-                    <th class="py-3.5 px-3 font-semibold text-xs uppercase text-center">Acciones</th>
                     <th class="py-3.5 px-3 font-semibold text-xs uppercase">
                         <div class="flex items-center justify-between gap-1">
                             Oficina
@@ -162,6 +161,7 @@ Panel de Control de Administrador
                     <th class="py-3.5 px-3 font-semibold text-xs uppercase text-center">Sexo</th>
                     <th class="py-3.5 px-3 font-semibold text-xs uppercase text-center">Embarazo</th>
                     <th class="py-3.5 px-3 font-semibold text-xs uppercase text-center">Fami. Num</th>
+                    <th class="py-3.5 px-3 font-semibold text-xs uppercase text-center">Acciones</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-slate-100">
@@ -173,16 +173,6 @@ Panel de Control de Administrador
                                onClick="checkALLT(this)" />
                     </td>
                     <td class="py-3 px-3 text-xs text-center font-medium text-slate-500">{{ forloop.counter }}</td>
-                    <td class="py-3 px-3 text-center">
-                        <a href="{% url 'editar' val.idRescate %}" 
-                           class="inline-flex items-center gap-1 py-1 px-2.5 bg-[#D4C19C] hover:bg-[#bfae8c] text-[#4E232E] font-bold text-xs rounded transition-colors shadow-sm"
-                           title="Editar Registro">
-                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>
-                            </svg>
-                            Editar
-                        </a>
-                    </td>
                     <td class="py-3 px-3 text-xs font-semibold text-[#4E232E]">{{val.oficinaRepre}}</td>
                     <td class="py-3 px-3 text-xs text-center whitespace-nowrap">{{val.fecha}}</td>
                     <td class="py-3 px-3 text-xs text-center font-semibold">{{val.hora}}</td>
@@ -241,6 +231,16 @@ Panel de Control de Administrador
                         {% else %}
                             {{val.numFamilia}}
                         {% endif %}
+                    </td>
+                    <td class="py-3 px-3 text-center">
+                        <a href="{% url 'editar' val.idRescate %}" 
+                           class="inline-flex items-center gap-1 py-1 px-2.5 bg-[#D4C19C] hover:bg-[#bfae8c] text-[#4E232E] font-bold text-xs rounded transition-colors shadow-sm"
+                           title="Editar Registro">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>
+                            </svg>
+                            Editar
+                        </a>
                     </td>
                 </tr>
                 {% endfor %}
@@ -328,7 +328,7 @@ Panel de Control de Administrador
             var id = checkbox.value;
             // var oficina = fila.cells[2].innerText; 
             // var fecha = fila.cells[3].innerText;   
-            var iso3 = fila.cells[8].innerText;
+            var iso3 = fila.cells[9].innerText;
             var nomM = fila.cells[10].innerText;
             var apeM = fila.cells[11].innerText;
 
