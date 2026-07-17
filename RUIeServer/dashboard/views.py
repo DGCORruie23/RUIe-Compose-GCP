@@ -204,8 +204,8 @@ def editarData(request, pk):
             'apellidos': rescate.apellidos,
             'parentesco': rescate.parentesco,
             'fechaNacimiento': fecha_naci_str,
-            'sexo': rescate.sexo,
-            'embarazo': rescate.embarazo,
+            'sexo': 'True' if (rescate.sexo is True or str(rescate.sexo).lower() == 'true') else 'False',
+            'embarazo': 'True' if (rescate.embarazo is True or str(rescate.embarazo).lower() == 'true') else 'False',
             'numFamilia': rescate.numFamilia,
             'oficinaR': rescate.oficinaRepre
         }
@@ -308,9 +308,104 @@ def editarData(request, pk):
             except ValueError:
                 return redirect('/dashboard')
         else:
-            print(form.errors)
-            messages.success(request, "Datos Erróneos")
-            return render(request, "dashboard/editarDato.html", context={"form": form, "value": rescate})
+            # Si el formulario es inválido, reconstruimos el contexto completo para no perder la estructura del formulario
+            ofiRep = request.POST.get('oficinaR', str(rescate.oficinaRepre))
+            
+            punto_attr_map = {
+                'aeropuerto': 'aeropuerto',
+                'carretero': 'carretero',
+                'central de autobus': 'centralAutobus',
+                'disuadidos': 'casaSeguridad',
+                'ferrocarril': 'ferrocarril',
+                'visitas de verificación': 'hotel',
+                'puestos a disposición': 'puestosADispo',
+                'voluntarios': 'voluntarios',
+            }
+            tiposPNombre = list(punto_attr_map.keys())
+            
+            # Recargar listas dinámicas
+            datos_puntos_estrategicos = {}
+            types_PRescateC = []
+            types_PRescateCA = []
+            types_PRescateF = []
+            for ef in EstadoFuerza.objects.all():
+                oficina = ef.oficinaR
+                tipo = ef.tipoP
+                nombre = ef.nomPuntoRevision.strip()
+                if oficina not in datos_puntos_estrategicos:
+                    datos_puntos_estrategicos[oficina] = {}
+                if tipo not in datos_puntos_estrategicos[oficina]:
+                    datos_puntos_estrategicos[oficina][tipo] = []
+                datos_puntos_estrategicos[oficina][tipo].append(nombre)
+                if oficina == ofiRep:
+                    if tipo == "Carretero":
+                        types_PRescateC.append(nombre)
+                    elif tipo == "Central de autobús":
+                        types_PRescateCA.append(nombre)
+                    elif tipo == "Ferroviario":
+                        types_PRescateF.append(nombre)
+
+            types_PRescateA = []
+            datos_puntos_internacion = {}
+            for pi in PuntosInternacion.objects.all():
+                est = pi.estadoPunto
+                tipo = pi.tipoPunto
+                nom = pi.nombrePunto.strip()
+                if est not in datos_puntos_internacion:
+                    datos_puntos_internacion[est] = {}
+                if tipo not in datos_puntos_internacion[est]:
+                    datos_puntos_internacion[est][tipo] = []
+                datos_puntos_internacion[est][tipo].append(nom)
+                if est == ofiRep and tipo == "AEREOS":
+                    types_PRescateA.append(nom)
+
+            types_PRescateM = []
+            datos_municipios = {}
+            for mun in Municipios.objects.all():
+                est = mun.estado
+                nom = mun.nomMunicipio.strip()
+                if est not in datos_municipios:
+                    datos_municipios[est] = []
+                datos_municipios[est].append(nom)
+                if est == ofiRep:
+                    types_PRescateM.append(nom)
+
+            types_Naciona = [p.nombre_pais.strip() for p in Paises.objects.all()]
+
+            datosR = {
+                'idRescate': pk,
+                'fecha': request.POST.get('fecha', rescate.fecha),
+                'hora': request.POST.get('hora', rescate.hora),
+                'tipo_punto': request.POST.get('tipo_punto', ''),
+                'puntoEstra': request.POST.get('puntoEstra', ''),
+                'nacionalidad': request.POST.get('nacionalidad', ''),
+                'nombre': request.POST.get('nombre', ''),
+                'apellidos': request.POST.get('apellidos', ''),
+                'parentesco': request.POST.get('parentesco', ''),
+                'fechaNacimiento': request.POST.get('fechaNacimiento', ''),
+                'sexo': request.POST.get('sexo', ''),
+                'embarazo': request.POST.get('embarazo', ''),
+                'numFamilia': request.POST.get('numFamilia', 0),
+                'oficinaR': ofiRep
+            }
+
+            context = {
+                "form": form,
+                "value": rescate,
+                "datosR": datosR,
+                "puntosEstrategicos": datos_puntos_estrategicos,
+                "puntosInternacion": datos_puntos_internacion,
+                "municipios": datos_municipios,
+                "res_aero": types_PRescateA,
+                "res_carre": types_PRescateC,
+                "res_central": types_PRescateCA,
+                "res_ferro": types_PRescateF,
+                "municipio": types_PRescateM,
+                "nacion": types_Naciona,
+                'tiposPNombre': tiposPNombre,
+            }
+            messages.error(request, "Datos erróneos. Por favor verifica los campos.")
+            return render(request, "dashboard/editarDato.html", context=context)
 
     return redirect("/dashboard")
 
@@ -368,16 +463,17 @@ def mostrarData(request):
                 messages.success(request, "El registro ha sido modificado")
                 return render(request, "dashboard/datos_dia.html", context=data)
             else:
-                print("datos erroneos")
+                print("datos erroneos en mostrarData")
                 print(form1.errors)
-                idR = request.POST["idRescate"]
-                rescate = RescatePunto.objects.get(idRescate=idR)
-                datos = {
-                "form" : form1,
-                "value": rescate,
-                }
-                messages.success(request, "Datos Erroneos")
-                return render(request, "dashboard/editarDato.html", context=datos )
+                idR = request.POST.get("idRescate")
+                # Redireccionamos a la vista editarData pasándole los errores en los mensajes de la sesión
+                # para que la vista editarData se encargue de inyectar todo el contexto correctamente.
+                for field, errors in form1.errors.items():
+                    for error in errors:
+                        messages.error(request, f"{field.capitalize()}: {error}")
+                if idR:
+                    return redirect('editarData', pk=idR)
+                return redirect('/dashboard')
 
 
     else:
