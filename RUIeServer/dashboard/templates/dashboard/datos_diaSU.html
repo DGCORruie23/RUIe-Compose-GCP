@@ -27,9 +27,22 @@ Panel de Control de Administrador
 {% block content %}
 {% comment %} <h1 class="text-xl">Dashboard de {{usuario.0.oficinaR}} </h1> {% endcomment %}
 
-<!-- Barra de Herramientas y Filtros -->
-<div class="bg-white p-4 rounded-xl shadow-md mb-6 border border-slate-100 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-    <div class="flex flex-wrap items-center gap-3">
+<!-- Inyectando diccionarios de forma segura para JS para corrección masiva -->
+{{ puntosEstrategicos|json_script:"datosEstrategicos" }}
+{{ puntosInternacion|json_script:"datosInternacion" }}
+{{ municipios|json_script:"datosMunicipios" }}
+
+<!-- Conteo total de registros centrado en la parte superior -->
+<div class="flex justify-center mb-6">
+    <span class="px-4 py-2 bg-[#F4EFF0] text-[#4E232E] rounded-lg font-bold text-sm shadow-md" id="totales">
+        Registros: 0
+    </span>
+</div>
+
+<!-- Barra de Herramientas y Filtros (En 2 filas) -->
+<div class="bg-white p-4 rounded-xl shadow-md mb-6 border border-slate-100 flex flex-col gap-4">
+    <!-- Fila 1: Filtros de Búsqueda -->
+    <div class="flex flex-wrap items-center justify-center gap-3">
         <div class="relative">
             <input class="pl-3 pr-3 py-2 rounded-lg border-2 border-[#D4C19C] focus:border-[#4E232E] focus:ring-1 focus:ring-[#4E232E] text-slate-800 outline-none transition-all text-sm w-44 shadow-sm" 
                    type="text" id="myInputAG" onkeyup="myFunction(5, 'myInputAG')" placeholder="Buscar por Agente">
@@ -54,13 +67,25 @@ Panel de Control de Administrador
             <input class="pl-3 pr-3 py-2 rounded-lg border-2 border-[#D4C19C] focus:border-[#4E232E] focus:ring-1 focus:ring-[#4E232E] text-slate-800 outline-none transition-all text-sm w-44 shadow-sm" 
                    type="text" id="myInputNac" onkeyup="myFunction(8, 'myInputNac')" placeholder="Buscar por Nacionalidad">
         </div>
-
-        <span class="px-3 py-1.5 bg-[#F4EFF0] text-[#4E232E] rounded-lg font-bold text-sm shadow-sm" id="totales">
-            Registros: 0
-        </span>
     </div>
 
-    <div class="flex items-center gap-3">
+    <!-- Fila 2: Botones de Acción -->
+    <div class="flex flex-wrap items-center justify-center gap-3">
+        <a href="{% url 'agregar_registro_fecha' year=year_context month=month_context day=day_context %}" class="w-full md:w-auto py-2.5 px-5 bg-[#1F4E5B] hover:bg-[#163740] text-white font-bold rounded-lg transition-colors shadow-md flex items-center justify-center gap-2 text-sm">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+            </svg>
+            Agregar Rescate
+        </a>
+
+        <!-- Botón Corrección (Llama al modal de corrección masiva) -->
+        <button type="button" onclick="mostrarModalCorreccion()" 
+                class="py-2.5 px-4 bg-[#D4C19C] hover:bg-[#bfae8c] text-[#4E232E] font-bold text-sm rounded-lg transition-colors shadow-md flex items-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+            </svg>
+            Corrección
+        </button>
 
         <form onsubmit="return descargarExcelOptimizado(event, 'downloadStatus')">
             {% csrf_token %}
@@ -80,7 +105,7 @@ Panel de Control de Administrador
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
             </svg>
-            Eliminar Registros
+            Eliminar Rescates
         </button>
     </div>
 </div>
@@ -272,6 +297,88 @@ Panel de Control de Administrador
                 </button>
                 <button onclick="cerrarModal()"
                     class="mt-3 px-4 py-2 bg-gray-300 text-gray-700 text-base font-medium rounded-md w-full shadow-sm hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-300">
+                    Cancelar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Corrección Masiva -->
+<div id="modalCorreccion" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden"
+    style="z-index: 50;">
+    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white text-slate-800">
+        <div class="mt-3 text-center">
+            <h3 class="text-lg leading-6 font-bold text-[#4E232E]">Corrección Masiva</h3>
+            <div class="mt-2 px-3 py-3 text-left space-y-4">
+                <p class="text-xs text-gray-500 font-medium text-center">
+                    Cambiar oficina o punto a los registros seleccionados:
+                </p>
+                
+                <div class="flex flex-col">
+                    <label for="corr_oficinaRepre" class="font-bold text-xs mb-1">Nueva Oficina:</label>
+                    <select id="corr_oficinaRepre"
+                        class="w-full p-2 border-2 border-[#D4C19C] rounded text-sm bg-white text-slate-800 focus:border-[#4E232E] outline-none">
+                        <option value="AGUASCALIENTES">AGUASCALIENTES</option>
+                        <option value="BAJA CALIFORNIA">BAJA CALIFORNIA</option>
+                        <option value="BAJA CALIFORNIA SUR">BAJA CALIFORNIA SUR</option>
+                        <option value="CAMPECHE">CAMPECHE</option>
+                        <option value="CDMX">CDMX</option>
+                        <option value="CHIAPAS">CHIAPAS</option>
+                        <option value="CHIHUAHUA">CHIHUAHUA</option>
+                        <option value="COAHUILA">COAHUILA</option>
+                        <option value="COLIMA">COLIMA</option>
+                        <option value="DURANGO">DURANGO</option>
+                        <option value="EDOMEX">EDOMEX</option>
+                        <option value="GUERRERO">GUERRERO</option>
+                        <option value="GUANAJUATO">GUANAJUATO</option>
+                        <option value="HIDALGO">HIDALGO</option>
+                        <option value="JALISCO">JALISCO</option>
+                        <option value="MICHOACÁN">MICHOACÁN</option>
+                        <option value="MORELOS">MORELOS</option>
+                        <option value="NAYARIT">NAYARIT</option>
+                        <option value="NUEVO LEÓN">NUEVO LEÓN</option>
+                        <option value="OAXACA">OAXACA</option>
+                        <option value="PUEBLA">PUEBLA</option>
+                        <option value="QUERÉTARO">QUERÉTARO</option>
+                        <option value="QUINTANA ROO">QUINTANA ROO</option>
+                        <option value="SAN LUIS POTOSÍ">SAN LUIS POTOSÍ</option>
+                        <option value="SINALOA">SINALOA</option>
+                        <option value="SONORA">SONORA</option>
+                        <option value="TABASCO">TABASCO</option>
+                        <option value="TAMAULIPAS">TAMAULIPAS</option>
+                        <option value="TLAXCALA">TLAXCALA</option>
+                        <option value="VERACRUZ">VERACRUZ</option>
+                        <option value="YUCATÁN">YUCATÁN</option>
+                        <option value="ZACATECAS">ZACATECAS</option>
+                    </select>
+                </div>
+
+                <div class="flex flex-col">
+                    <label for="corr_tipo_punto" class="font-bold text-xs mb-1">Nuevo Tipo de punto:</label>
+                    <select id="corr_tipo_punto"
+                        class="w-full p-2 border-2 border-[#D4C19C] rounded text-sm bg-white text-slate-800 focus:border-[#4E232E] outline-none">
+                        {% for val in tiposPNombre %}
+                        <option value="{{val}}">{{val}}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="flex flex-col">
+                    <label for="corr_puntoEstra" class="font-bold text-xs mb-1">Nuevo Nombre de punto:</label>
+                    <select id="corr_puntoEstra"
+                        class="w-full p-2 border-2 border-[#D4C19C] rounded text-sm bg-white text-slate-800 focus:border-[#4E232E] outline-none">
+                        <!-- Llenado por Javascript -->
+                    </select>
+                </div>
+            </div>
+            <div class="items-center px-4 py-3 space-y-2">
+                <button type="button" onclick="ejecutarCorreccionMasiva()"
+                    class="px-4 py-2 bg-[#285C4D] text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-[#1f473b] focus:outline-none">
+                    Guardar Cambios
+                </button>
+                <button type="button" onclick="cerrarModalCorreccion()"
+                    class="px-4 py-2 bg-gray-300 text-gray-700 text-base font-medium rounded-md w-full shadow-sm hover:bg-gray-400 focus:outline-none">
                     Cancelar
                 </button>
             </div>
@@ -674,6 +781,134 @@ Panel de Control de Administrador
 
         rows.forEach(row => tbody.appendChild(row));
         closeFilter();
+    }
+
+    function mostrarModalCorreccion() {
+        var checkboxes = document.querySelectorAll('input[name="registros_seleccionados"]:checked');
+        if (checkboxes.length === 0) {
+            alert("Por favor selecciona al menos un registro para corregir.");
+            return;
+        }
+        document.getElementById('modalCorreccion').classList.remove('hidden');
+        onCorreccionSelectChange();
+    }
+
+    function cerrarModalCorreccion() {
+        document.getElementById('modalCorreccion').classList.add('hidden');
+    }
+
+    function onCorreccionSelectChange() {
+        const elEstra = document.getElementById('datosEstrategicos');
+        const elInter = document.getElementById('datosInternacion');
+        const elMun = document.getElementById('datosMunicipios');
+
+        const estraAll = elEstra ? JSON.parse(elEstra.textContent) : {};
+        const interAll = elInter ? JSON.parse(elInter.textContent) : {};
+        const munAll = elMun ? JSON.parse(elMun.textContent) : {};
+
+        const selectOficina = document.getElementById('corr_oficinaRepre');
+        const selectTipo = document.getElementById('corr_tipo_punto');
+        const selectPunto = document.getElementById('corr_puntoEstra');
+
+        if (!selectOficina || !selectTipo || !selectPunto) return;
+
+        const oficina = selectOficina.value;
+        const tipoSeleccionado = selectTipo.value;
+        
+        let opciones = [];
+
+        if (tipoSeleccionado === "aeropuerto") {
+            const est = (estraAll[oficina] && estraAll[oficina]['Aeropuerto']) || [];
+            const int = (interAll[oficina] && interAll[oficina]['AEREOS']) || [];
+            opciones = [...est, ...int];
+        }
+        else if (tipoSeleccionado === "carretero") {
+            const est = (estraAll[oficina] && estraAll[oficina]['Carretero']) || [];
+            const int = (interAll[oficina] && interAll[oficina]['TERRESTRES']) || [];
+            opciones = [...est, ...int];
+        }
+        else if (tipoSeleccionado === "central de autobus") {
+            opciones = (estraAll[oficina] && estraAll[oficina]['Central de autobús']) || [];
+        }
+        else if (tipoSeleccionado === "disuadidos" || tipoSeleccionado === "visitas de verificación") {
+            opciones = munAll[oficina] || [];
+        }
+        else if (tipoSeleccionado === "ferrocarril") {
+            opciones = (estraAll[oficina] && estraAll[oficina]['Ferroviario']) || [];
+        }
+        else if (tipoSeleccionado === "puestos a disposición" || tipoSeleccionado === "voluntarios") {
+            opciones = ["Sin Información"];
+        }
+
+        const uniqueOpciones = [...new Set(opciones)];
+        selectPunto.innerHTML = "";
+
+        if (uniqueOpciones.length === 0) {
+            const opt = document.createElement('option');
+            opt.value = "Sin Información";
+            opt.text = "Sin Información";
+            selectPunto.add(opt);
+        } else {
+            uniqueOpciones.forEach(val => {
+                const opt = document.createElement('option');
+                opt.value = val;
+                opt.text = val;
+                selectPunto.add(opt);
+            });
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const selectOficina = document.getElementById('corr_oficinaRepre');
+        const selectTipo = document.getElementById('corr_tipo_punto');
+        if (selectOficina && selectTipo) {
+            selectOficina.addEventListener('change', onCorreccionSelectChange);
+            selectTipo.addEventListener('change', onCorreccionSelectChange);
+        }
+    });
+
+    function ejecutarCorreccionMasiva() {
+        const form = document.getElementById('formEliminar');
+        form.action = "{% url 'corregir_registros_masivo' %}";
+        
+        const existingCorrInputs = form.querySelectorAll('.corr-input-masivo');
+        existingCorrInputs.forEach(input => input.remove());
+
+        const nuevaOficina = document.getElementById('corr_oficinaRepre').value;
+        const nuevoTipoPunto = document.getElementById('corr_tipo_punto').value;
+        const nuevoPunto = document.getElementById('corr_puntoEstra').value;
+        const fechaRedirect = "{{ fecha_P }}";
+
+        const inputOficina = document.createElement('input');
+        inputOficina.type = 'hidden';
+        inputOficina.name = 'nueva_oficina';
+        inputOficina.value = nuevaOficina;
+        inputOficina.className = 'corr-input-masivo';
+
+        const inputTipoPunto = document.createElement('input');
+        inputTipoPunto.type = 'hidden';
+        inputTipoPunto.name = 'nuevo_tipo_punto';
+        inputTipoPunto.value = nuevoTipoPunto;
+        inputTipoPunto.className = 'corr-input-masivo';
+
+        const inputPunto = document.createElement('input');
+        inputPunto.type = 'hidden';
+        inputPunto.name = 'nuevo_punto';
+        inputPunto.value = nuevoPunto;
+        inputPunto.className = 'corr-input-masivo';
+
+        const inputRedirect = document.createElement('input');
+        inputRedirect.type = 'hidden';
+        inputRedirect.name = 'fecha_redirect';
+        inputRedirect.value = fechaRedirect;
+        inputRedirect.className = 'corr-input-masivo';
+
+        form.appendChild(inputOficina);
+        form.appendChild(inputTipoPunto);
+        form.appendChild(inputPunto);
+        form.appendChild(inputRedirect);
+
+        form.submit();
     }
 </script>
 

@@ -301,7 +301,103 @@ class RegistroNewForm(forms.Form):
             oficinaRepre = self.cleaned_data['oficinaR'],
             )
         return datosActualizados
-    
+
+
+class RegistroCreateForm(RegistroNewForm):
+    idRescate = forms.IntegerField(widget=forms.NumberInput(attrs={'type' : 'hidden'}), label="id", required=False)
+    nombreAgente = forms.CharField(max_length=300, required=False, label="Nombre del Agente:")
+
+    def __init__(self, *args, **kwargs):
+        super(RegistroCreateForm, self).__init__(*args, **kwargs)
+
+    def save(self, commit=True):
+        db_aerop = False
+        db_carre = False
+        db_centralA = False
+        db_casaS = False
+        db_ferro = False
+        db_hotel = False
+        db_puestos = False
+        db_volunt = False
+
+        puntoEstra = self.cleaned_data['puntoEstra']
+        tipo_punto = self.cleaned_data['tipo_punto']
+
+        if(tipo_punto == 'aeropuerto'):
+            db_aerop = True
+        elif(tipo_punto == 'carretero'):
+            db_carre = True
+        elif(tipo_punto == 'central de autobus'):
+            db_centralA = True
+        elif(tipo_punto == 'disuadidos'):
+            db_casaS = True
+        elif(tipo_punto == 'ferrocarril'):
+            db_ferro = True
+        elif(tipo_punto == 'visitas de verificación'):
+            db_hotel = True
+        elif(tipo_punto == 'puestos a disposición'):
+            db_puestos = True
+            puntoEstra = ""
+        else:
+            db_volunt = True
+            puntoEstra = ""
+
+        db_nacionalid = self.cleaned_data['nacionalidad']
+        paisI = Paises.objects.filter(nombre_pais=db_nacionalid)
+        db_iso3 = paisI[0].iso3 if paisI.exists() else ""
+
+        try:
+            fecha_nacimiento = datetime.datetime.strptime(self.cleaned_data['fechaNacimiento'], '%Y-%m-%d')
+            db_edad = datetime.datetime.now().year - fecha_nacimiento.year
+            fecha_nacimiento_str = fecha_nacimiento.strftime('%d/%m/%Y')
+        except Exception:
+            try:
+                fecha_nacimiento = datetime.datetime.strptime(self.cleaned_data['fechaNacimiento'], '%d/%m/%Y')
+                db_edad = datetime.datetime.now().year - fecha_nacimiento.year
+                fecha_nacimiento_str = self.cleaned_data['fechaNacimiento']
+            except Exception:
+                fecha_nacimiento_str = self.cleaned_data['fechaNacimiento']
+                db_edad = 0
+
+        sexo1 = self.cleaned_data['sexo'] 
+        embarazo1 = self.cleaned_data['embarazo']
+
+        is_hombre = (sexo1 == 'True' or sexo1 is True)
+        is_embarazada = (embarazo1 == 'True' or embarazo1 is True)
+
+        if is_hombre:
+            db_embarazo = False
+        else:
+            db_embarazo = is_embarazada
+
+        nuevoRescate = RescatePunto.objects.create(
+            fecha=self.cleaned_data['fecha'],
+            hora=self.cleaned_data['hora'],
+            nombreAgente=str(self.cleaned_data.get('nombreAgente') or '').upper(),
+            puntoEstra=puntoEstra.upper(),
+            aeropuerto=db_aerop,
+            carretero=db_carre,
+            casaSeguridad=db_casaS,
+            centralAutobus=db_centralA,
+            ferrocarril=db_ferro,
+            hotel=db_hotel,
+            puestosADispo=db_puestos,
+            voluntarios=db_volunt,
+            nacionalidad=str(db_nacionalid).upper(),
+            iso3=str(db_iso3),
+            nombre=str(self.cleaned_data['nombre']).upper(),
+            apellidos=str(self.cleaned_data['apellidos']).upper(),
+            parentesco=str(self.cleaned_data['parentesco'] or ''),
+            fechaNacimiento=fecha_nacimiento_str,
+            sexo=is_hombre,
+            embarazo=db_embarazo,
+            numFamilia=self.cleaned_data['numFamilia'],
+            edad=db_edad,
+            oficinaRepre=self.cleaned_data['oficinaR'],
+            numPresuntosDelincuentes=0,
+        )
+        return nuevoRescate
+
 
 class EstadoFuerzaForm(forms.ModelForm):
     class Meta:

@@ -5,9 +5,11 @@ urlpatterns = [
      path('', views.dashboard, name="dashboard"),
      path('datos/', views.mostrarData, name="mostrar"),
      path('editar/<int:pk>', views.editarData, name="editar"),
+     path('agregar/<int:year>/<int:month>/<int:day>/', views.agregarData, name="agregar_registro_fecha"),
      path('datos/fecha', views.datos_fecha, name="datos_por_fecha"),
      path('datos/fechas', views.datos_fechas, name="datos_por_fechas"),
      path('datos/eliminarM', views.eliminar_registros, name="eliminar_varios_registros"),
+     path('datos/corregirM', views.corregir_registros_masivo, name="corregir_registros_masivo"),
      path('datos/<int:year>/<int:month>/<int:day>/', views.tabla_registros, name='tabla_registros_fecha'),
 
 
